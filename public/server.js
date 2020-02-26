@@ -1,3 +1,6 @@
+const SIMULATION = true;
+const SIMUL_INTERVAL=5000;
+
 const STATE_INITIALISING = 0;
 const STATE_REGISTRATION=1;
 const STATE_WAITING_FOR_QUESTION=2;
@@ -108,6 +111,17 @@ function closeRegistration()
 {
     state=STATE_WAITING_FOR_QUESTION;
     sendToClient(CMD_QUIZ_READY);
+    if (SIMULATION)
+        setTimeout(simulAskQuestion,SIMUL_INTERVAL);
+}
+
+function simulAskQuestion()
+{
+    state=STATE_QUESTION_IN_PROGRESS;
+    var simulQ = new question.Question("True or False: The Openshift Community Project is called Origin");
+    simulQ.addAnswer("True",false);
+    simulQ.addAnswer("False",true);
+    processQuestion(simulQ);
 }
 
 function parseURL(params)
@@ -144,6 +158,8 @@ function questionTimeout()
     sendToClient(CMD_QUESTION_TIMEOUT,currentQuestion.getCorrectAnswerIndex());
     sendToClient(CMD_PLAYER_LIST,players.getPlayers());
     state=STATE_WAITING_FOR_QUESTION;
+    if (SIMULATION)
+        setTimeout(simulAskQuestion,SIMUL_INTERVAL);
 }
 
 processRegistration=function(playerName)
@@ -153,9 +169,10 @@ processRegistration=function(playerName)
     {
         case PLAYER_INVALID_NAME_LENGTH:
         case PLAYER_INVALID_NAME:
-        case PLAYER_DUPLICATE:
-            sendToClient(CMD_REGISTRATION_ERROR,regStatus);
+           sendToClient(CMD_REGISTRATION_ERROR,regStatus);
             break;
+        case PLAYER_DUPLICATE:
+            console.log("Duplicate player - ignoring");
         case 0:
             console.log("Server: New player registered: "+playerName);
             players.registerPlayer(playerName);
@@ -208,7 +225,7 @@ function processBots()
 {
     for (var i=0;i<NUM_BOTS;i++)
     {
-        if (Math.random() > .95)
+        if (Math.random() > .98)
         {
             processPlayerAnswer(BOT_PREFIX+i,Math.floor(Math.random()*currentQuestion.getNumAnswers()));
         }

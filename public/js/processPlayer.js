@@ -56,6 +56,7 @@ socket.on(CMD_REGISTRATION_ERROR,function(data)
 socket.on(CMD_NEW_QUESTION,function(data)
 {
   var question = data.msg;
+  closeGameWaitForm(); // For late joiners
   console.log("New question received: "+question);
   openQuestionForm(question);
 });

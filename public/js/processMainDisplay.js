@@ -73,16 +73,29 @@ displayLeaderboard=function(playerData)
     newCell = newRow.insertCell();  
     newCell.innerHTML = createSpan("Time","mainText","black");
     
-  for (var i=0;i<Math.min(5,playerData.length);i++)
-  {
-      newRow=tableLeaderboard.insertRow();
-      newCell = newRow.insertCell();  
-      newCell.innerHTML = createSpan(playerData[i].name,"mainText","black");
-      newCell = newRow.insertCell();  
-      newCell.innerHTML = createSpan(playerData[i].numCorrect,"mainText","black");
-      newCell = newRow.insertCell();  
-      newCell.innerHTML = createSpan(playerData[i].totalResponseTime,"mainText","black");
+    var numShown=0;
+    for (var i=0;i<playerData.length;i++)
+    {
+        if (playerData[i].numCorrect > 0)
+        {
+            numShown++;
+            if (numShown > 5)
+                break;
+            newRow=tableLeaderboard.insertRow();
+            newCell = newRow.insertCell();  
+            newCell.innerHTML = createSpan(playerData[i].name,"mainText","black");
+            newCell = newRow.insertCell();  
+            newCell.innerHTML = createSpan(playerData[i].numCorrect,"mainText","black");
+            newCell = newRow.insertCell();  
+            newCell.innerHTML = createSpan(formatTime(playerData[i].totalResponseTime),"mainText","black");
+        }
   };
+}
+
+formatTime=function(aTime)
+{
+    var t = aTime/1000;
+    return t.toFixed(1)+"s";
 }
 
 displayCurrentQuestion=function(question,correctAnswerindex)
@@ -119,7 +132,7 @@ displayCurrentAnswers=function(currentQAnswers)
       newCell = newRow.insertCell();  
       newCell.innerHTML = createSpan(currentQAnswers[i].playerName,"mainText","black");
       newCell = newRow.insertCell();  
-      newCell.innerHTML = createSpan(currentQAnswers[i].responseTime,"mainText","black");
+      newCell.innerHTML = createSpan(formatTime(currentQAnswers[i].responseTime),"mainText","black");
   };
 }
 
