@@ -41,6 +41,11 @@ exports.getNumPlayers=function()
     return players.length;
 }
 
+exports.playerExists=function(playerName)
+{
+    return findPlayer(playerName) != null;
+}
+
 exports.playerHasAnswered=function(playerName,qIndex)
 {
     return findPlayer(playerName).hasAnswered(qIndex);
