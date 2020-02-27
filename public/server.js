@@ -100,6 +100,7 @@ function init()
     state=STATE_INITIALISING;
     currentQuestion=null;
     questionIndex=0;
+    console.log("Config: "+process.env.MYSQL_HOST+"/"+process.env.MYSQL_USER+"/"+process.env.MYSQL_PASSWORD+"/"+process.env.MYSQL_DATABASE);
     connection.connect(function(err) 
     {
         if (err) {
