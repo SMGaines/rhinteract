@@ -44,7 +44,7 @@ app.use('/audio',express.static(__dirname + '/audio'));
 
 
 var connection = mysql.createConnection({
-  host     : process.env.MYSQL_HOST,
+  host     : "localhost",
   user     : process.env.MYSQL_USER,
   password : process.env.MYSQL_PASSWORD,
   database : process.env.MYSQL_DATABASE
