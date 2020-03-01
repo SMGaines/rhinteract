@@ -160,15 +160,16 @@ function extractData(playerSummary)
 {
     var totalResponseTime=0;
     var numCorrect=0;
-    for (var i=0;i<playerSummary.length;i++)
+    
+    for (var i=0;i<playerSummary.answers.length;i++)
     {
-        if (playerSummary[i].isCorrect)
+        if (playerSummary.answers[i].isCorrect)
         {
-            totalResponseTime+=playerSummary[i].responseTime;
+            totalResponseTime+=playerSummary.answers[i].responseTime;
             numCorrect++;
         }   
     }
-    return new PlayerData(player.name,numCorrect,totalResponseTime);
+    return new PlayerData(playerSummary.name,numCorrect,totalResponseTime);
 }
 
 PlayerData=function(name,numCorrect,totalTime)

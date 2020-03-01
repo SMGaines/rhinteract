@@ -53,7 +53,7 @@ app.get('/adminResponse',function(req,res)
 
 app.get('/quiz',function(req,res)
 {
-    startQuiz(req.category);
+    startQuiz(req.query.category);
     res.sendFile(__dirname+'/mainDisplay.html');
 });
 
@@ -103,6 +103,7 @@ io.on('connection',function(socket)
 
 startQuiz=function(category)
 {
+    console.log("Starting quiz for category: "+category);
     currentCategory=category;
     askQuestion();
 }
@@ -164,8 +165,22 @@ function processBots()
     {
         if (Math.random() > .98)
         {
-            botAnswers[botIndex].push(new AnswerEntry(currentQuestion.getCategory(),currentQuestion.getIndex(),Math.random()>.5,new Date()-currentQuestion.getTimeAsked()));
-            sendToClient(CMD_PLAYER_SUMMARY,botAnswers[botIndex]);
+            botAnswers[i].push(new AnswerEntry(currentQuestion.getCategory(),currentQuestion.getIndex(),Math.random()>.5,new Date()-currentQuestion.getTimeAsked()));
+            sendToClient(CMD_PLAYER_SUMMARY,new PlayerSummary(BOT_PREFIX+i,botAnswers[i]));
         }
     }
+}
+
+PlayerSummary=function(name,answers)
+{
+    this.name=name;
+    this.answers=answers;
+}
+
+AnswerEntry=function(category,index,isCorrect,responseTime)
+{
+  this.category=category;
+  this.index=index;
+  this.isCorrect=isCorrect;
+  this.responseTime=responseTime;
 }
