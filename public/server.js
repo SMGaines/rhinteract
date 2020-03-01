@@ -1,13 +1,7 @@
-const SIMULATION = true;
-const SIMUL_INTERVAL=5000;
-
-const STATE_INITIALISING = 0;
-const STATE_REGISTRATION=1;
-const STATE_WAITING_FOR_QUESTION=2;
-const STATE_QUESTION_IN_PROGRESS=3;
-const STATE_GAME_OVER=4;
+const QUESTIONS_FILE_NAME = "questions.txt";
 
 const QUESTION_TIME = 10000; // How long for people to answer a question
+const QUESTION_INTERVAL=5000; // Time between questions
 
 const NUM_BOTS = 8;
 const BOT_PREFIX="BOT";
@@ -17,13 +11,12 @@ const BOT_INTERVAL = 100;
 
 const CMD_REGISTER="register";
 const CMD_REGISTERED="registered";
-const CMD_REGISTRATION_ERROR="registrationError";
-const CMD_PLAYER_LIST="playerList";
 const CMD_NEW_QUESTION = "newQuestion";
-const CMD_PLAYER_ANSWER = "playerAnswer";
 const CMD_QUESTION_TIMEOUT = "questionTimeout";
 const CMD_QUIZ_READY = "quizReady";
-const CMD_PLAYER_UPDATE = 'playerUpdate';
+const CMD_END_OF_QUIZ = "quizEnd";
+const CMD_PLAYER_SUMMARY = 'playerSummary';
+const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -33,23 +26,13 @@ var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 
 var question=require("./js/question.js");
-var players=require("./js/players.js");
-
-const mysql = require('mysql');
+var questions=require("./js/questions.js");
 
 app.use('/css',express.static(__dirname + '/css'));
 app.use('/js',express.static(__dirname + '/js'));
 app.use('/images',express.static(__dirname + '/images'));
 app.use('/audio',express.static(__dirname + '/audio'));
 
-
-var connection = mysql.createConnection({
-  host     : "172.30.123.67",
-  port     : "3306",
-  user     : process.env.MYSQL_USER,
-  password : process.env.MYSQL_PASSWORD,
-  database : process.env.MYSQL_DATABASE
-});
 
 app.get('/player',function(req,res)
 {
@@ -64,21 +47,16 @@ app.get('/registrationComplete',function(req,res)
 
 app.get('/adminResponse',function(req,res)
 {
-    state=STATE_REGISTRATION;
     registerBots();
     res.sendFile(__dirname+'/registration.html');
 });
 
-app.get('/question',function(req,res)
+app.get('/quiz',function(req,res)
 {
-    if (state!=STATE_WAITING_FOR_QUESTION)
-        res.sendFile(__dirname+'/questionError.html');
-     else
-     {
-        processQuestion(req.query);
-        res.sendFile(__dirname+'/mainDisplay.html');
-    }
+    startQuiz(req.category);
+    res.sendFile(__dirname+'/mainDisplay.html');
 });
+
 
 app.get('/',function(req,res)
 {
@@ -91,146 +69,75 @@ server.listen(process.env.PORT || 8080,function()
     console.log('Listening on '+server.address().port);
 });
 
-var state;
 var currentQuestion;
-var questionIndex;
+var currentCategory;
 var botTimer;
+var botAnswers=[];
+var questionIndex;
 
 function init()
 {
-    state=STATE_INITIALISING;
     currentQuestion=null;
     questionIndex=0;
-    console.log("Config: "+process.env.MYSQL_HOST+"/"+process.env.MYSQL_USER+"/"+process.env.MYSQL_PASSWORD+"/"+process.env.MYSQL_DATABASE);
-    connection.connect(function(err) 
-    {
-        if (err) {
-          return console.log('error:' + err.message);
-        }
-        console.log('Interact is now connected with mysql database...');
-    });
-    connection.query('select * from players where name=?', ["Steve"], function (error, results, fields) 
-    {
-        if (error) throw error;
-        console.log(error);
-    });
+    currentCategory="";
+    questions.loadQuestions(__dirname+"/"+QUESTIONS_FILE_NAME);
 }
 
 io.on('connection',function(socket)
 {
-    socket.on(CMD_PLAYER_ANSWER,function(playerName,answerIndex)
-    {
-        processPlayerAnswer(playerName,answerIndex);
-    });
-
     socket.on(CMD_REGISTER,function(playerName)
     {
-        processRegistration(playerName);
+        sendToClient(CMD_REGISTERED,playerName);
+    });    
+    
+    socket.on(CMD_DUPLICATE_PLAYER,function(playerName)
+    {
+        sendToClient(CMD_DUPLICATE_PLAYER,playerName);
+    });
+
+    socket.on(CMD_PLAYER_SUMMARY,function(playerData)
+    {
+        sendToClient(CMD_PLAYER_SUMMARY,playerData);
     });
 });
 
-processPlayerAnswer=function(playerName,answerIndex)
+startQuiz=function(category)
 {
-    if (state != STATE_QUESTION_IN_PROGRESS)
+    currentCategory=category;
+    askQuestion();
+}
+
+function askQuestion()
+{
+    currentQuestion=questions.getQuestion(currentCategory,questionIndex++);
+    if (currentQuestion == null)
     {
-        console.log("Player response ignored: Question not in progress");
-        return;
-    }
-    
-    if (players.playerExists(playerName))
-    {
-        console.log("Player doesn't exist - ignored");
-        return;
-    }
-    
-    if (!players.playerHasAnswered(playerName,currentQuestion.getIndex()))
-    {
-        console.log("Answer of "+answerIndex+" received for question "+currentQuestion.getIndex()+" from "+playerName);
-        var responseTime=new Date()-currentQuestion.getTimeAsked();
-        players.registerAnswer(playerName,currentQuestion.getIndex(),currentQuestion.getCorrectAnswerIndex() == answerIndex,responseTime);
-        sendToClient(CMD_PLAYER_UPDATE,new PlayerUpdate(playerName,responseTime,answerIndex));
-    }
+        console.log("End of quiz: category: "+currentCategory);
+        sendToClient(CMD_END_OF_QUIZ);
+    }  
     else
-        console.log("Player response ignored: player has already answered this question");
-}
-
-processRegistration=function(playerName)
-{
-    var regStatus = players.validateNewPlayer(playerName);
-    switch(regStatus)
     {
-        case PLAYER_INVALID_NAME_LENGTH:
-        case PLAYER_INVALID_NAME:
-           sendToClient(CMD_REGISTRATION_ERROR,regStatus);
-            break;
-        case PLAYER_DUPLICATE:
-            console.log("Duplicate player - ignoring");
-        case 0:
-            console.log("Server: New player registered: "+playerName);
-            players.registerPlayer(playerName);
-            sendToClient(CMD_REGISTERED);
-            sendToClient(CMD_PLAYER_LIST,players.getPlayers());
-            break;
-        }
-}
-
-function processQuestion(incomingQuestion)
-{
-    currentQuestion=parseURL(incomingQuestion);
-    currentQuestion.setIndex(questionIndex++);
-    currentQuestion.setTimeAsked(new Date());
-    console.log("Sending question to clients: "+currentQuestion.answers.length);
-    sendToClient(CMD_NEW_QUESTION,currentQuestion);
-    botTimer=setInterval(processBots,BOT_INTERVAL);
-    setTimeout(questionTimeout,QUESTION_TIME); 
-    state=STATE_QUESTION_IN_PROGRESS;
+        currentQuestion.setTimeAsked(new Date());
+        sendToClient(CMD_NEW_QUESTION,currentQuestion);
+        botTimer=setInterval(processBots,BOT_INTERVAL);
+        setTimeout(questionTimeout,QUESTION_TIME); 
+    }
 }
 
 function questionTimeout()
 {
     console.log("Question timed out");
     clearInterval(botTimer);
-    sendToClient(CMD_QUESTION_TIMEOUT,currentQuestion.getCorrectAnswerIndex());
-    sendToClient(CMD_PLAYER_LIST,players.getPlayers());
-    state=STATE_WAITING_FOR_QUESTION;
-    if (SIMULATION)
-        setTimeout(simulAskQuestion,SIMUL_INTERVAL);
+    sendToClient(CMD_QUESTION_TIMEOUT);
+    setTimeout(askQuestion,QUESTION_INTERVAL);
 }
 
 function closeRegistration()
 {
-    state=STATE_WAITING_FOR_QUESTION;
     sendToClient(CMD_QUIZ_READY);
-    if (SIMULATION)
-        setTimeout(simulAskQuestion,SIMUL_INTERVAL);
 }
 
-function simulAskQuestion()
-{
-    state=STATE_QUESTION_IN_PROGRESS;
-    var simulQ = new question.Question("True or False: The Openshift Community Project is called Origin");
-    simulQ.addAnswer("True",false);
-    simulQ.addAnswer("False",true);
-    processQuestion(simulQ);
-}
-
-function parseURL(params)
-{
-    var qText=params.text;
-    var q = new question.Question(qText);
-    var ci=params.ci;
-    if (params.a0 !=null)
-        q.addAnswer(params.a0,ci==0);
-    if (params.a1 !=null)
-        q.addAnswer(params.a1,ci==1);
-    if (params.a2 !=null)
-        q.addAnswer(params.a2,ci==2);
-    if (params.a3 !=null)
-        q.addAnswer(params.a3,ci==3);
-    return q;
-}
-
-PlayerUpdate=function(playerName,responseTime,answerIndex)
+PlayerAnswer=function(playerName,responseTime,answerIndex)
 {
     this.playerName=playerName;
     this.responseTime=responseTime;
@@ -246,7 +153,8 @@ function registerBots()
 {
     for (var i=0;i<NUM_BOTS;i++)
     {
-        processRegistration(BOT_PREFIX+i);
+        botAnswers[i]=new Array();
+        sendToClient(CMD_REGISTERED,BOT_PREFIX+i);
     }
 }
 
@@ -256,7 +164,8 @@ function processBots()
     {
         if (Math.random() > .98)
         {
-            processPlayerAnswer(BOT_PREFIX+i,Math.floor(Math.random()*currentQuestion.getNumAnswers()));
+            botAnswers[botIndex].push(new AnswerEntry(currentQuestion.getCategory(),currentQuestion.getIndex(),Math.random()>.5,new Date()-currentQuestion.getTimeAsked()));
+            sendToClient(CMD_PLAYER_SUMMARY,botAnswers[botIndex]);
         }
     }
 }

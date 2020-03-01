@@ -3,36 +3,58 @@ const GAME_VERSION="0.1";
 
 const COOKIE_EXPIRY_MS = 60*60*1000;
 const COOKIE_USER_PARAMETER = "username";
-
-// *** Shared between players.js & processPlayer.js
-const PLAYER_INVALID_NAME_LENGTH = -1;
-const PLAYER_INVALID_NAME = -2;
-const PLAYER_DUPLICATE=-3;
-// ***
+const COOKIE_CORRECT_PREFIX="rhquizcorrect";
+const COOKIE_INCORRECT_PREFIX="rhquizincorrect";
+const COOKIE_CORRECT_ANSWER = "correct";
+const COOKIE_INCORRECT_ANSWER = "incorrect";
+const COOKIE_COOKIE_SEPARATOR = "/";
 
 // ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
 const CMD_REGISTER="register";
 const CMD_REGISTERED="registered";
-const CMD_REGISTRATION_ERROR="registrationError";
-const CMD_PLAYER_LIST="playerList";
 const CMD_NEW_QUESTION = "newQuestion";
-const CMD_PLAYER_ANSWER = "playerAnswer";
 const CMD_QUESTION_TIMEOUT = "questionTimeout";
 const CMD_QUIZ_READY = "quizReady";
+const CMD_END_OF_QUIZ = "quizEnd";
+const CMD_PLAYER_SUMMARY = 'playerSummary';
+const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
 var liftMusic;
 var myPlayerName;
+var currentQuestion;
+var amRegistered;
 
 socket = io.connect();
 
 socket.on(CMD_REGISTERED,function(data)
 {
-  document.getElementById("gameTitle").innerHTML= GAME_NAME+" "+GAME_VERSION;
-  closeRegistrationForm();
-  openGameWaitForm(myPlayerName);
+  var playerName=data.msg;
+  if (playerName == myPlayerName)
+  {
+    if (amRegistered)
+    {
+      socket.emit(CMD_DUPLICATE_PLAYER,playerName);
+      return;
+    }
+    amRegistered=true;
+    setCookie(COOKIE_USER_PARAMETER,playerName);
+    document.getElementById("gameTitle").innerHTML= GAME_NAME+" "+GAME_VERSION;
+    closeRegistrationForm();
+    openGameWaitForm(myPlayerName);
+  }
+});
+
+socket.on(CMD_DUPLICATE_PLAYER,function(data)
+{
+  var playerName=data.msg;
+  if (playerName == myPlayerName)
+  {
+    if (!amRegistered)
+      document.getElementById("regStatus").innerHTML= "Name already in use";
+  }
 });
 
 socket.on(CMD_QUIZ_READY,function(data)
@@ -42,23 +64,21 @@ socket.on(CMD_QUIZ_READY,function(data)
 
 socket.on(CMD_QUESTION_TIMEOUT,function(data)
 {
-  console.log("Question timed out")
+  console.log("Question timed out");
   closeQuestionForm();
-});
-
-socket.on(CMD_REGISTRATION_ERROR,function(data)
-{
-  var regError = data.msg;
-  console.log("Error in registration: "+regError);
-  showRegistrationError(regError);
 });
 
 socket.on(CMD_NEW_QUESTION,function(data)
 {
-  var question = data.msg;
+  currentQuestion = data.msg;
   closeGameWaitForm(); // For late joiners
-  console.log("New question received: "+question);
-  openQuestionForm(question);
+  console.log("New question received: "+currentQuestion);
+  openQuestionForm();
+});
+
+socket.on(CMD_END_OF_QUIZ,function(data)
+{
+  console.log("End of Quiz");
 });
 
 init = function()
@@ -68,17 +88,6 @@ init = function()
 };
 
 // ********** START OF REGISTRATION FUNCTIONS **********
-
-registerPlayer = function(playerName)
-{
-  if (playerName != "" && playerName != null) 
-  {
-    setCookie(COOKIE_USER_PARAMETER,playerName);
-    myPlayerName=playerName;
-    console.log("Registering player: "+playerName);
-    socket.emit(CMD_REGISTER,playerName);
-  }
-};
 
 function openRegistrationForm()
 {
@@ -90,23 +99,14 @@ function openRegistrationForm()
 
 function processRegistrationForm()
 {
-  var nameInput=document.getElementById("regName").value;
-	registerPlayer(nameInput);
+  console.log("Registering player: "+myPlayerName);
+	myPlayerName=document.getElementById("regName").value;
+  socket.emit(CMD_REGISTER,myPlayerName);
 }
 
 function closeRegistrationForm()
 {
 	document.getElementById("registrationForm").style.display= "none";
-}
-
-function showRegistrationError(error)
-{
-	if (error == PLAYER_DUPLICATE)
-		document.getElementById("regStatus").innerHTML="Player name in use";
-	else if (error == PLAYER_INVALID_NAME_LENGTH)
-    document.getElementById("regStatus").innerHTML=("Name must be between 3 and 8 chars");
-  else if (error == PLAYER_INVALID_NAME)
-    document.getElementById("regStatus").innerHTML=("Name must be alphanumeric");
 }
 
 // ********** END OF REGISTRATION FORM FUNCTIONS **********
@@ -134,30 +134,59 @@ function closeGameWaitForm()
 answer = function(selectedAnswerIndex)
 {
     closeQuestionForm();
-    socket.emit(CMD_PLAYER_ANSWER,myPlayerName,selectedAnswerIndex);
+    var responseTime=new Date()-currentQuestion.getTimeAsked();
+    var cookieName=COOKIE_QUIZ_PREFIX+currentQuestion.category+COOKIE_SEPARATOR+currentQuestion.index;
+    setCookie(cookieName,currentQuestion.answerIndex==selectedAnswerIndex?COOKIE_CORRECT_ANSWER:COOKIE_INCORRECT_ANSWER+COOKIE_SEPARATOR+responseTime);
+    socket.emit(CMD_PLAYER_SUMMARY,getPlayerSummary());
 }
 
-function openQuestionForm(question)
+getPlayerSummary=function()
 {
-  console.log("a"+question.answers);
-  showQuestion(question);
+  var allCookies = document.cookie.split(';');
+  var answers=[];
+  for (var i = 0 ; i <= allCookies.length; i++) 
+  {
+    if (allCookies[i].startsWith(COOKIE_QUIZ_PREFIX))
+    {
+      var category=allCookies[i].substring(COOKIE_QUIZ_PREFIX.length,allCookies[i].indexOf(COOKIE_SEPARATOR));
+      var index=allCookies[i].substring(allCookies[i].indexOf(COOKIE_SEPARATOR)+1,allCookies[i].indexOf("="));
+      var response=allCookies[i].substring(allCookies[i].indexOf("=")+1);
+      var isCorrect=response.substring(0,response.indexOf(COOKIE_SEPARATOR))==COOKIE_CORRECT_ANSWER;
+      var responseTime=response.substring(response.indexOf(COOKIE_SEPARATOR));
+      answers.push(new AnswerEntry(category,index,isCorrect,responseTime));
+    }
+  }
+  return answers;
+}
+
+function AnswerEntry(category,index,isCorrect,responseTime)
+{
+  this.category=category;
+  this.index=index;
+  this.isCorrect=isCorrect;
+  this.responseTime=responseTime;
+}
+
+function openQuestionForm()
+{
+  showQuestion();
   document.getElementById("questionForm").style.display= "block";
 }
 
-function showQuestion(question)
+function showQuestion()
 {
   var qTable = document.getElementById('questionTable');
   var newRow,newCell;
   qTable.innerHTML="";
   newRow=qTable.insertRow();
   newCell = newRow.insertCell();  
-  newCell.innerHTML = createSpan(question.text,"veryLargeText","red");
+  newCell.innerHTML = createSpan(currentQuestion.text,"veryLargeText","red");
 
-  for (var i=0;i<question.answers.length;i++)
+  for (var i=0;i<currentQuestion.answers.length;i++)
   {
       newRow=qTable.insertRow();
       newCell = newRow.insertCell();  
-      newCell.innerHTML = createButton(question.answers[i],"veryLargeButton",i);
+      newCell.innerHTML = createButton(currentQuestion.answers[i],"veryLargeButton",i);
   };
 }
 

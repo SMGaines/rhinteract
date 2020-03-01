@@ -5,13 +5,12 @@ const NONE = -1;
 
 const CMD_REGISTER="register";
 const CMD_REGISTERED="registered";
-const CMD_REGISTRATION_ERROR="registrationError";
-const CMD_PLAYER_LIST="playerList";
 const CMD_NEW_QUESTION = "newQuestion";
-const CMD_PLAYER_ANSWER = "playerAnswer";
 const CMD_QUESTION_TIMEOUT = "questionTimeout";
 const CMD_QUIZ_READY = "quizReady";
-const CMD_PLAYER_UPDATE = 'playerUpdate';
+const CMD_END_OF_QUIZ = "quizEnd";
+const CMD_PLAYER_SUMMARY = 'playerSummary';
+const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -26,10 +25,10 @@ init = function()
 
 socket = io.connect();
 
-socket.on(CMD_PLAYER_LIST,function(data)
+socket.on(CMD_PLAYER_SUMMARY,function(data)
 {
-    players=data.msg;
-    var playerData=getPlayerData(players);
+    playerSummary=data.msg;
+    playerData.push(extractData(playerSummary));
     var sortedPlayerData=sortScores(playerData);
     displayLeaderboard(sortedPlayerData);
 });
@@ -41,13 +40,6 @@ socket.on(CMD_NEW_QUESTION,function(data)
     displayCurrentQuestion(currentQuestion,NONE);
 });
 
-socket.on(CMD_PLAYER_UPDATE,function(data)
-{
-    var update=data.msg;
-    currentAnswers.push(update);
-    displayCurrentAnswers(currentAnswers);
-});
-
 socket.on(CMD_QUIZ_READY,function(data)
 {
     console.log("Quiz ready");
@@ -55,8 +47,7 @@ socket.on(CMD_QUIZ_READY,function(data)
 
 socket.on(CMD_QUESTION_TIMEOUT,function(data)
 {
-  var correctAnswerindex=data.msg;
-  displayCurrentQuestion(currentQuestion,correctAnswerindex);
+  displayCurrentQuestion(currentQuestion);
 });
 
 displayLeaderboard=function(playerData)
@@ -98,7 +89,7 @@ formatTime=function(aTime)
     return t.toFixed(1)+"s";
 }
 
-displayCurrentQuestion=function(question,correctAnswerindex)
+displayCurrentQuestion=function(question)
 {
     var tableCurrentQuestion = document.getElementById('tableCurrentQuestion');
     var newRow,newCell;
@@ -111,7 +102,7 @@ displayCurrentQuestion=function(question,correctAnswerindex)
   {
       newRow=tableCurrentQuestion.insertRow();
       newCell = newRow.insertCell();  
-      newCell.innerHTML = createSpan(question.answers[i],"mainText",i==correctAnswerindex?"red":"black");
+      newCell.innerHTML = createSpan(question.answers[i],"mainText",i==question.answerIndex?"red":"black");
   };
 }
 
@@ -141,17 +132,6 @@ function createSpan(text,cssClass,colour)
     return "<span class='"+cssClass+"' style='color:"+colour+"'>"+text+"</span>";
 }
 
-// Extract name,num correct answers and total response time from the player list
-function getPlayerData(players)
-{
-    var playerData=[];
-    players.forEach(function(player)
-    {
-        playerData.push(extractData(player));
-    });
-    return playerData;
-}
-
 // Sort based on correct answers, then response time
 function sortScores(playerData)
 {
@@ -176,15 +156,15 @@ function sortScores(playerData)
     return sortedPlayerData;
 }
 
-function extractData(player)
+function extractData(playerSummary)
 {
     var totalResponseTime=0;
     var numCorrect=0;
-    for (var i=0;i<player.answers.length;i++)
+    for (var i=0;i<playerSummary.length;i++)
     {
-        if (player.answers[i].isCorrect)
+        if (playerSummary[i].isCorrect)
         {
-            totalResponseTime+=player.answers[i].responseTime;
+            totalResponseTime+=playerSummary[i].responseTime;
             numCorrect++;
         }   
     }

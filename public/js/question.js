@@ -1,7 +1,8 @@
 
-exports.Question = function(text)
+exports.Question = function(text,category,index)
 {
-    this.index=-1;
+    this.index=index;
+    this.category=category;
     this.text = text;
     this.answers=[];
     this.answerIndex=-1;
@@ -12,9 +13,9 @@ exports.Question = function(text)
         return this.answers.length;
     }
 
-    this.setIndex=function(anIndex)
+    this.getCategory=function()
     {
-        this.index=anIndex;
+        return this.category;
     }
 
     this.setTimeAsked=function(timeAsked)

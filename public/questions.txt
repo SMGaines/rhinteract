@@ -1,0 +1,8 @@
+c:General
+q:True or False?: The community project name for OpenShift is Origin
+a:True
+A:False
+c:CND
+q:True or False?: The community project name for OpenShift is Origin
+a:True
+A:False
