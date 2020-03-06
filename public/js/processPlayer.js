@@ -134,7 +134,7 @@ function closeGameWaitForm()
 answer = function(selectedAnswerIndex)
 {
     closeQuestionForm();
-    var responseTime=new Date()-currentQuestion.getTimeAsked();
+    var responseTime=new Date()-currentQuestion.timeAsked;
     var cookieName=COOKIE_QUIZ_PREFIX+currentQuestion.category+COOKIE_SEPARATOR+currentQuestion.index;
     setCookie(cookieName,currentQuestion.answerIndex==selectedAnswerIndex?COOKIE_CORRECT_ANSWER:COOKIE_INCORRECT_ANSWER+COOKIE_SEPARATOR+responseTime);
     socket.emit(CMD_PLAYER_DATA,getPlayerData());

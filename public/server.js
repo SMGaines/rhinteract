@@ -53,7 +53,7 @@ app.get('/adminResponse',function(req,res)
 
 app.get('/quiz',function(req,res)
 {
-    startQuiz(req.query.category);
+    startQuiz(req.query.category,req.query.index);
     res.sendFile(__dirname+'/mainDisplay.html');
 });
 
@@ -78,8 +78,6 @@ var questionIndex;
 function init()
 {
     currentQuestion=null;
-    questionIndex=0;
-    currentCategory="";
     questions.loadQuestions(__dirname+"/"+QUESTIONS_FILE_NAME);
 }
 
@@ -101,10 +99,11 @@ io.on('connection',function(socket)
     });
 });
 
-startQuiz=function(category)
+startQuiz=function(category,index)
 {
     console.log("Starting quiz for category: "+category);
     currentCategory=category;
+    questionIndex=(typeof index == 'undefined')?0:index;
     askQuestion();
 }
 

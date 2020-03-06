@@ -4,10 +4,17 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="css/rhInteract.css">
 </head>
-<body background="images/rhbackground.png" >
-    <div class="veryLargeText">RH Interact Administration</div>
-    <p>
-    <div id='gameAdmin'>  
+<body>
+    <div id='header' class='mainPanel' style="position:absolute;width:1820px; height: 150px;top:10px; left:10px; z-index:1">
+        <table>
+            <tr>
+                <td><img src="images/rhlogo.png"/></td>
+                <td><span id='gameDetails' class='headerText'>Interact Administration</span></td>
+            </tr>
+        </table>
+   </div>
+    
+    <div id='gameAdmin' style="position:absolute;width:1820px; height: 250px;top:170px; left:10px; z-index:1">  
         <form action="/adminResponse">
             <table>
                 <tr><th><input class='veryLargeText' type="submit" value="Start Registration"></th></tr>

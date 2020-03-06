@@ -125,8 +125,10 @@ displayCurrentAnswers=function()
     tableCurrentAnswers.innerHTML="";
     newRow=tableCurrentAnswers.insertRow();
     newCell = newRow.insertCell();  
+    newCell.width = '30%';
     newCell.innerHTML = createSpan("Name","mainText","black");
     newCell = newRow.insertCell();  
+    newCell.width = '10%';
     newCell.innerHTML = createSpan("Time","mainText","black");
     
     for (var i=0;i<Math.min(5,currentAnswers.length);i++)
