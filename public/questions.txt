@@ -2,7 +2,11 @@ c:General
 q:True or False?: The community project name for OpenShift is Origin
 a:True
 A:False
-c:CND
-q:True or False?: The community project name for OpenShift is Origin
+q:True or False?: The My name is jeff project name for OpenShift is Origin
 a:True
 A:False
+q:What would be the best product to offer if the customer wanted to add intelligence to applications?
+a:Red Hat 3Scale
+A:Red Hat Decision Manager
+a:Red Hat OpenShift Container Platform
+a:Red Hat Ansible Automation Platform

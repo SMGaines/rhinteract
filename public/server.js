@@ -15,7 +15,7 @@ const CMD_NEW_QUESTION = "newQuestion";
 const CMD_QUESTION_TIMEOUT = "questionTimeout";
 const CMD_QUIZ_READY = "quizReady";
 const CMD_END_OF_QUIZ = "quizEnd";
-const CMD_PLAYER_SUMMARY = 'playerSummary';
+const CMD_PLAYER_DATA = 'playerData';
 const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
@@ -95,9 +95,9 @@ io.on('connection',function(socket)
         sendToClient(CMD_DUPLICATE_PLAYER,playerName);
     });
 
-    socket.on(CMD_PLAYER_SUMMARY,function(playerData)
+    socket.on(CMD_PLAYER_DATA,function(playerData)
     {
-        sendToClient(CMD_PLAYER_SUMMARY,playerData);
+        sendToClient(CMD_PLAYER_DATA,playerData);
     });
 });
 
@@ -165,13 +165,14 @@ function processBots()
     {
         if (Math.random() > .98)
         {
+            console.log("Bot "+i+" answering the question");
             botAnswers[i].push(new AnswerEntry(currentQuestion.getCategory(),currentQuestion.getIndex(),Math.random()>.5,new Date()-currentQuestion.getTimeAsked()));
-            sendToClient(CMD_PLAYER_SUMMARY,new PlayerSummary(BOT_PREFIX+i,botAnswers[i]));
+            sendToClient(CMD_PLAYER_DATA,new PlayerData(BOT_PREFIX+i,botAnswers[i]));
         }
     }
 }
 
-PlayerSummary=function(name,answers)
+PlayerData=function(name,answers)
 {
     this.name=name;
     this.answers=answers;

@@ -17,7 +17,7 @@ const CMD_NEW_QUESTION = "newQuestion";
 const CMD_QUESTION_TIMEOUT = "questionTimeout";
 const CMD_QUIZ_READY = "quizReady";
 const CMD_END_OF_QUIZ = "quizEnd";
-const CMD_PLAYER_SUMMARY = 'playerSummary';
+const CMD_PLAYER_DATA = 'playerData';
 const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
@@ -137,10 +137,10 @@ answer = function(selectedAnswerIndex)
     var responseTime=new Date()-currentQuestion.getTimeAsked();
     var cookieName=COOKIE_QUIZ_PREFIX+currentQuestion.category+COOKIE_SEPARATOR+currentQuestion.index;
     setCookie(cookieName,currentQuestion.answerIndex==selectedAnswerIndex?COOKIE_CORRECT_ANSWER:COOKIE_INCORRECT_ANSWER+COOKIE_SEPARATOR+responseTime);
-    socket.emit(CMD_PLAYER_SUMMARY,getPlayerSummary());
+    socket.emit(CMD_PLAYER_DATA,getPlayerData());
 }
 
-getPlayerSummary=function()
+getPlayerData=function()
 {
   var allCookies = document.cookie.split(';');
   var answers=[];
@@ -156,7 +156,13 @@ getPlayerSummary=function()
       answers.push(new AnswerEntry(category,index,isCorrect,responseTime));
     }
   }
-  return answers;
+  return new PlayerData(myPlayerName,answers);
+}
+
+function PlayerData(name,answers)
+{
+  this.name=name;
+  this.answers=answers;
 }
 
 function AnswerEntry(category,index,isCorrect,responseTime)
