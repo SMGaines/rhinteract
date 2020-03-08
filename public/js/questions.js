@@ -61,3 +61,13 @@ exports.getNumQuestions=function()
 {
     return questions.length;
 }
+
+exports.isValidCategory=function(category)
+{
+    for (var i=0;i<questions.length;i++)
+    {
+        if (questions[i].category==category)
+            return true;
+    }
+    return false;
+}

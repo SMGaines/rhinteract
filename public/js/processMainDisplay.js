@@ -1,5 +1,6 @@
 const GAME_TITLE = "RH INTERACT v0.1";
 const NONE = -1;
+const NUM_DISPLAYED_PLAYERS = 5;
 
 // ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -11,6 +12,9 @@ const CMD_QUIZ_READY = "quizReady";
 const CMD_END_OF_QUIZ = "quizEnd";
 const CMD_PLAYER_DATA = 'playerData';
 const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
+const CMD_START_QUIZ = "startQuiz";
+const CMD_OPEN_REGISTRATION = "openRegistration";
+const CMD_ADMIN_STATUS = "adminStatus";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -37,12 +41,20 @@ socket.on(CMD_NEW_QUESTION,function(data)
 {
     currentQuestion=data.msg;
     currentAnswers=[];
+    clearCurrentAnswers();
     displayCurrentQuestion(currentQuestion,false);
 });
 
 socket.on(CMD_QUIZ_READY,function(data)
 {
     console.log("Quiz ready");
+});
+
+socket.on(CMD_END_OF_QUIZ,function(data)
+{
+    console.log("End of quiz");
+    displayEndOfQuiz();
+    clearCurrentAnswers();
 });
 
 socket.on(CMD_QUESTION_TIMEOUT,function(data)
@@ -53,7 +65,6 @@ socket.on(CMD_QUESTION_TIMEOUT,function(data)
 
 displayLeaderboard=function()
 {
-    console.log("displayLeaderboard: "+playerSummaries.length);
     var tableLeaderboard = document.getElementById('tableLeaderboard');
     var newRow,newCell;
     tableLeaderboard.innerHTML="";
@@ -77,7 +88,7 @@ displayLeaderboard=function()
         if (playerSummaries[i].numCorrect > 0)
         {
             numShown++;
-            if (numShown > 5)
+            if (numShown > NUM_DISPLAYED_PLAYERS)
                 break;
             newRow=tableLeaderboard.insertRow();
             newCell = newRow.insertCell();  
@@ -95,7 +106,9 @@ displayLeaderboard=function()
 formatTime=function(aTime)
 {
     var t = aTime/1000;
-    return t.toFixed(1)+"s";
+    var s=t%60;
+    var m=Math.floor(t/60);
+    return (m>0?m+"m ":"")+s.toFixed(1)+"s";
 }
 
 displayCurrentQuestion=function(question,showAnswer)
@@ -116,6 +129,17 @@ displayCurrentQuestion=function(question,showAnswer)
       newCell = newRow.insertCell();  
       newCell.innerHTML = createSpan(question.answers[i],"mainText",showAnswer&&i==question.answerIndex?"red":"black");
   };
+}
+
+displayEndOfQuiz=function()
+{
+    var tableCurrentQuestion = document.getElementById('tableCurrentQuestion');
+    var newRow,newCell;
+    tableCurrentQuestion.innerHTML="";
+    newRow=tableCurrentQuestion.insertRow();
+    newCell = newRow.insertCell();  
+    newCell.colSpan = 2;
+    newCell.innerHTML = createSpan("Quiz complete","mainText","black");
 }
 
 displayCurrentAnswers=function()
@@ -139,6 +163,12 @@ displayCurrentAnswers=function()
         newCell = newRow.insertCell();  
         newCell.innerHTML = createSpan(formatTime(currentAnswers[i].responseTime),"mainText","black");
     };
+}
+
+clearCurrentAnswers=function()
+{
+    var tableCurrentAnswers = document.getElementById('tableCurrentAnswers');
+    tableCurrentAnswers.innerHTML="";
 }
 
 function createLeaderBoardSpan(text)
@@ -179,13 +209,17 @@ function createPlayerSummary(playerData)
 
     for (var i=0;i<playerData.answers.length;i++)
     {
-        if (playerData.answers[i].isCorrect && !questionAlreadyAnswered(playerData.answers[i],previousAnswers))
+        if (!questionAlreadyAnswered(playerData.answers[i],previousAnswers))
         {
-            totalResponseTime+=playerData.answers[i].responseTime;
-            numCorrect++;
+            if (playerData.answers[i].isCorrect)
+            {
+                totalResponseTime+=playerData.answers[i].responseTime;
+                numCorrect++;
+            }
             previousAnswers.push(playerData.answers[i]);
         }   
     }
+    console.log("CPS: "+playerData.name+"/"+numCorrect+"/"+totalResponseTime);
     return new PlayerSummary(playerData.name,numCorrect,totalResponseTime);
 }
 
@@ -202,7 +236,6 @@ function questionAlreadyAnswered(answer,previousAnswers)
 // Sort based on correct answers, then response time
 function sortPlayerSummaries()
 {
-    console.log("sortScores: "+playerSummaries.length);
     playerSummaries.sort(function (a, b) 
     {   
         return b.numCorrect - a.numCorrect || a.totalResponseTime - b.totalResponseTime;
@@ -220,7 +253,6 @@ function updateCurrentAnswers(playerData)
 {
     if (!playerHasAlreadyAnsweredCurrentQuestion(playerData.name))
     {
-        console.log("playerHasntAnsweredCurrentQuestion: "+playerData.name);
         var answer = getAnswerToCurrentQuestion(playerData);
         if (answer != null)
             currentAnswers.push(answer);

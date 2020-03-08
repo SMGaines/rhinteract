@@ -2,24 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./js/processAdmin.js" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="css/rhInteract.css">
 </head>
 <body>
-    <div id='header' class='mainPanel' style="position:absolute;width:1820px; height: 150px;top:10px; left:10px; z-index:1">
+    <div id='header' class='mainPanel' style="position:absolute;width:1000px; height: 150px;top:10px; left:10px; z-index:1">
         <table>
             <tr>
                 <td><img src="images/rhlogo.png"/></td>
-                <td><span id='gameDetails' class='headerText'>Interact Administration</span></td>
+                <td><span class='headerText'>Interact Administration</span></td>
             </tr>
         </table>
    </div>
+   <div class='mainPanel' id='registrationDisplay' class='mainPanel' style="position:absolute;width:800px; height: 800px;top:10px; left:1020px; z-index:1">
+        <span class='headerText'>Registered Players</span>
+        <TABLE id='registrationTable' style="margin:auto;">
+        </TABLE>
+    </div>
+    <div class='mainPanel' style="position:absolute;width:1000px; height: 500px;top:170px; left:10px; z-index:1">  
+        <table>
+            <TR><TH style='padding: 20px;'><button class='mainText' type='button' onclick="openRegistration()">Open Registration</button></TH></TR>
+            <TR><TH style='padding: 20px;'><button class='mainText' type='button' onclick="startQuiz('General')">Start Quiz: General</button></TH></TR>
+            <TR><TH style='padding: 20px;'><button class='mainText' type='button' onclick="startQuiz('RHEL')">Start Quiz: RHEL</button></TH></TR>
+            <TR><TH style='padding: 20px;'><button class='mainText' type='button' onclick="startQuiz('HCI')">Start Quiz: HCI</button></TH></tr>
+            <TR><TH style='padding: 20px;'><button class='mainText' type='button' onclick="startQuiz('CND')">Start Quiz: CND</button></TH></TR>
+        </table>
+    </div>
     
-    <div id='gameAdmin' style="position:absolute;width:1820px; height: 250px;top:170px; left:10px; z-index:1">  
-        <form action="/adminResponse">
-            <table>
-                <tr><th><input class='veryLargeText' type="submit" value="Start Registration"></th></tr>
-            </table>
-        </form> 
+    <div class='mainPanel' style="position:absolute;width:1000px; height: 150px;top:700px; left:10px; z-index:1">  
+        <span id='quizStatus' class='mainText'></span>
     </div>
 </body>
 </html>

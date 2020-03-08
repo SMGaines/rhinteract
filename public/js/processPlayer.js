@@ -1,13 +1,12 @@
 const GAME_NAME="INTERACT";
 const GAME_VERSION="0.1";
 
-const COOKIE_EXPIRY_MS = 60*60*1000;
+const COOKIE_EXPIRY_MS = 36*60*60*1000; // 36 hours - the length of the training
 const COOKIE_USER_PARAMETER = "username";
-const COOKIE_CORRECT_PREFIX="rhquizcorrect";
-const COOKIE_INCORRECT_PREFIX="rhquizincorrect";
+const COOKIE_QUIZ_PREFIX = "rhquiz";
 const COOKIE_CORRECT_ANSWER = "correct";
 const COOKIE_INCORRECT_ANSWER = "incorrect";
-const COOKIE_COOKIE_SEPARATOR = "/";
+const COOKIE_SEPARATOR = "/";
 
 // ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -19,6 +18,9 @@ const CMD_QUIZ_READY = "quizReady";
 const CMD_END_OF_QUIZ = "quizEnd";
 const CMD_PLAYER_DATA = 'playerData';
 const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
+const CMD_START_QUIZ = "startQuiz";
+const CMD_OPEN_REGISTRATION = "openRegistration";
+const CMD_ADMIN_STATUS = "adminStatus";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -60,6 +62,7 @@ socket.on(CMD_DUPLICATE_PLAYER,function(data)
 socket.on(CMD_QUIZ_READY,function(data)
 {
   closeGameWaitForm();
+  clearQuizCookies();
 });
 
 socket.on(CMD_QUESTION_TIMEOUT,function(data)
@@ -134,9 +137,11 @@ function closeGameWaitForm()
 answer = function(selectedAnswerIndex)
 {
     closeQuestionForm();
-    var responseTime=new Date()-currentQuestion.timeAsked;
+    console.log(new Date()+"/"+new Date(currentQuestion.timeAsked));
+    var responseTime=new Date()-new Date(currentQuestion.timeAsked);
     var cookieName=COOKIE_QUIZ_PREFIX+currentQuestion.category+COOKIE_SEPARATOR+currentQuestion.index;
-    setCookie(cookieName,currentQuestion.answerIndex==selectedAnswerIndex?COOKIE_CORRECT_ANSWER:COOKIE_INCORRECT_ANSWER+COOKIE_SEPARATOR+responseTime);
+    console.log("answer: Setting cookie:["+cookieName+"]");
+    setCookie(cookieName,(currentQuestion.answerIndex==selectedAnswerIndex?COOKIE_CORRECT_ANSWER:COOKIE_INCORRECT_ANSWER)+COOKIE_SEPARATOR+responseTime);
     socket.emit(CMD_PLAYER_DATA,getPlayerData());
 }
 
@@ -144,15 +149,17 @@ getPlayerData=function()
 {
   var allCookies = document.cookie.split(';');
   var answers=[];
-  for (var i = 0 ; i <= allCookies.length; i++) 
+  for (var i = 0 ; i < allCookies.length; i++) 
   {
-    if (allCookies[i].startsWith(COOKIE_QUIZ_PREFIX))
+    var c=allCookies[i].substring(1);// Cookie contents start at position 1 of the cookie string
+    if (c.startsWith(COOKIE_QUIZ_PREFIX)) 
     {
-      var category=allCookies[i].substring(COOKIE_QUIZ_PREFIX.length,allCookies[i].indexOf(COOKIE_SEPARATOR));
-      var index=allCookies[i].substring(allCookies[i].indexOf(COOKIE_SEPARATOR)+1,allCookies[i].indexOf("="));
-      var response=allCookies[i].substring(allCookies[i].indexOf("=")+1);
+      console.log("getPlayerData: Found quiz cookie:["+c+"]");
+      var category=c.substring(COOKIE_QUIZ_PREFIX.length,c.indexOf(COOKIE_SEPARATOR));
+      var index=c.substring(c.indexOf(COOKIE_SEPARATOR)+1,c.indexOf("="));
+      var response=c.substring(c.indexOf("=")+1);
       var isCorrect=response.substring(0,response.indexOf(COOKIE_SEPARATOR))==COOKIE_CORRECT_ANSWER;
-      var responseTime=response.substring(response.indexOf(COOKIE_SEPARATOR));
+      var responseTime=parseInt(response.substring(response.indexOf(COOKIE_SEPARATOR)+1));
       answers.push(new AnswerEntry(category,index,isCorrect,responseTime));
     }
   }
@@ -203,6 +210,20 @@ function closeQuestionForm()
 
 // ********** END OF QUESTION FUNCTION **********
 
+clearQuizCookies=function()
+{
+  var allCookies = document.cookie.split(';');
+  for (var i = 0 ; i < allCookies.length; i++) 
+  {
+    var c=allCookies[i].substring(1);// Cookie contents start at position 1 of the cookie string
+    if (c.startsWith(COOKIE_QUIZ_PREFIX)) 
+    {
+      var cookieName=c.substring(0,c.indexOf("="));
+      console.log("clearQuizCookies: Removing:["+cookieName+"]");
+      document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    }
+  }
+}
 function setCookie(name,value) 
 {
   var d = new Date();

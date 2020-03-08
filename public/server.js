@@ -3,9 +3,9 @@ const QUESTIONS_FILE_NAME = "questions.txt";
 const QUESTION_TIME = 10000; // How long for people to answer a question
 const QUESTION_INTERVAL=5000; // Time between questions
 
-const NUM_BOTS = 8;
+const NUM_BOTS = 20;
 const BOT_PREFIX="BOT";
-const BOT_INTERVAL = 100;
+const BOT_INTERVAL = 500;
 
 // ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -17,6 +17,9 @@ const CMD_QUIZ_READY = "quizReady";
 const CMD_END_OF_QUIZ = "quizEnd";
 const CMD_PLAYER_DATA = 'playerData';
 const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
+const CMD_START_QUIZ = "startQuiz";
+const CMD_OPEN_REGISTRATION = "openRegistration";
+const CMD_ADMIN_STATUS = "adminStatus";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -39,28 +42,14 @@ app.get('/player',function(req,res)
     res.sendFile(__dirname+'/playerDisplay.html');
 });
 
-app.get('/registrationComplete',function(req,res)
-{
-    closeRegistration();
-    res.sendFile(__dirname+'/mainDisplay.html');
-});
-
-app.get('/adminResponse',function(req,res)
-{
-    registerBots();
-    res.sendFile(__dirname+'/registration.html');
-});
-
-app.get('/quiz',function(req,res)
-{
-    startQuiz(req.query.category,req.query.index);
-    res.sendFile(__dirname+'/mainDisplay.html');
-});
-
-
 app.get('/',function(req,res)
 {
      res.sendFile(__dirname+'/admin.html');
+});
+
+app.get('/main',function(req,res)
+{
+     res.sendFile(__dirname+'/mainDisplay.html');
 });
 
 server.listen(process.env.PORT || 8080,function()
@@ -83,9 +72,21 @@ function init()
 
 io.on('connection',function(socket)
 {
+    socket.on(CMD_OPEN_REGISTRATION,function()
+    {
+        console.log("Server: Opening Registration");
+        registerBots();
+        sendToClient(CMD_ADMIN_STATUS,"Registration now open");
+    });    
+
     socket.on(CMD_REGISTER,function(playerName)
     {
         sendToClient(CMD_REGISTERED,playerName);
+    });    
+
+    socket.on(CMD_START_QUIZ,function(quizName)
+    {
+        startQuiz(quizName);
     });    
     
     socket.on(CMD_DUPLICATE_PLAYER,function(playerName)
@@ -95,21 +96,37 @@ io.on('connection',function(socket)
 
     socket.on(CMD_PLAYER_DATA,function(playerData)
     {
+        console.log("CMD_PLAYER_DATA: Name: "+playerData.name);
+        for (var j=0;j<playerData.answers.length;j++)
+        {
+            console.log("--> "+playerData.answers[j].category+"/"+playerData.answers[j].index+"/"+playerData.answers[j].isCorrect+"/"+playerData.answers[j].responseTime);
+        }         
         sendToClient(CMD_PLAYER_DATA,playerData);
     });
 });
 
 startQuiz=function(category,index)
 {
-    console.log("Starting quiz for category: "+category);
-    currentCategory=category;
-    questionIndex=(typeof index == 'undefined')?0:index;
-    askQuestion();
+    if (questions.isValidCategory(category))
+    {
+        console.log("startQuiz: category: "+category);
+        currentCategory=category;
+        questionIndex=(typeof index == 'undefined')?0:index;
+        setTimeout(askQuestion,QUESTION_INTERVAL);
+        sendToClient(CMD_START_QUIZ,currentCategory);
+        sendToClient(CMD_ADMIN_STATUS,"Quiz starting for category: "+category);
+    }
+    else
+    {
+        console.log("startQuiz: No such quiz: "+category);
+        sendToClient(CMD_ADMIN_STATUS,"No such quiz for category: "+category);
+    }
 }
 
 function askQuestion()
 {
-    currentQuestion=questions.getQuestion(currentCategory,questionIndex++);
+    currentQuestion=questions.getQuestion(currentCategory,questionIndex);
+    questionIndex++;
     if (currentQuestion == null)
     {
         console.log("End of quiz: category: "+currentCategory);
@@ -162,10 +179,14 @@ function processBots()
 {
     for (var i=0;i<NUM_BOTS;i++)
     {
-        if (Math.random() > .98)
+        if (Math.random() > .99)
         {
-            console.log("Bot "+i+" answering the question");
             botAnswers[i].push(new AnswerEntry(currentQuestion.getCategory(),currentQuestion.getIndex(),Math.random()>.5,new Date()-currentQuestion.getTimeAsked()));
+            console.log("CMD_PLAYER_DATA: Name: "+BOT_PREFIX+i);
+            for (var j=0;j<botAnswers[i].length;j++)
+            {
+                console.log("--> "+botAnswers[i][j].category+"/"+botAnswers[i][j].index+"/"+botAnswers[i][j].isCorrect+"/"+botAnswers[i][j].responseTime);
+            }         
             sendToClient(CMD_PLAYER_DATA,new PlayerData(BOT_PREFIX+i,botAnswers[i]));
         }
     }
