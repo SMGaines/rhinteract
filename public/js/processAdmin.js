@@ -1,3 +1,6 @@
+const COOKIE_PASSWORD_PARAMETER = "password";
+const COOKIE_EXPIRY_MS = 36*60*60*1000; // 36 hours - the length of the training
+
 // ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
 const CMD_REGISTER="register";
@@ -11,10 +14,19 @@ const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
 const CMD_START_QUIZ = "startQuiz";
 const CMD_OPEN_REGISTRATION = "openRegistration";
 const CMD_ADMIN_STATUS = "adminStatus";
+const CMD_LOGIN = "login";
+const CMD_LOGIN_OK = "loginOK";
+const CMD_LOGIN_FAIL = "loginFail";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
 var players = [];
+var myPassword;
+
+init=function()
+{
+    openPasswordForm();
+}
 
 socket = io.connect();
 
@@ -32,20 +44,27 @@ socket.on(CMD_ADMIN_STATUS,function(data)
     document.getElementById('quizStatus').innerHTML=createSpan(data.msg);
 });
 
-init = function()
+socket.on(CMD_LOGIN_FAIL,function(data)
 {
-    console.log("Init");
-};
+    console.log("CMD_LOGIN_FAIL: "+data.msg);
+    openPasswordForm();
+});
+
+socket.on(CMD_LOGIN_OK,function(data)
+{
+    console.log("CMD_LOGIN_OK: "+data.msg);
+    closePasswordForm();
+});
 
 function startQuiz(quizName)
 {
-    socket.emit(CMD_START_QUIZ,quizName);
+    socket.emit(CMD_START_QUIZ,new AdminData(myPassword,quizName));
 }
 
 function openRegistration()
 {
     console.log("Opening registration");
-    socket.emit(CMD_OPEN_REGISTRATION);
+    socket.emit(CMD_OPEN_REGISTRATION,new AdminData(myPassword,""));
 }
 
 function playerDisplay()
@@ -67,4 +86,58 @@ function playerDisplay()
 function createSpan(text)
 {
     return "<span class='mainText'>"+text+"</span>";
+}
+
+function openPasswordForm()
+{
+  var password=getCookie(COOKIE_PASSWORD_PARAMETER);
+ 
+  document.getElementById("password").value = password;
+  document.getElementById("loginForm").style.display = "block";
+}
+
+function processLoginForm()
+{
+  console.log("Logging in");
+  myPassword=document.getElementById("password").value;
+  setCookie(COOKIE_PASSWORD_PARAMETER,myPassword);
+  socket.emit(CMD_LOGIN,myPassword);
+}
+
+function closePasswordForm()
+{
+	document.getElementById("loginForm").style.display= "none";
+}
+
+AdminData=function(aPassword,aCommand)
+{
+    this.password=aPassword;
+    this.command=aCommand;
+}
+
+function getCookie(name) 
+{
+  var name = name + "=";
+  var ca = document.cookie.split(';');
+  for(var i = 0; i < ca.length; i++) 
+  {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') 
+    {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) 
+    {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+function setCookie(name,value) 
+{
+  var d = new Date();
+  d.setTime(d.getTime() + COOKIE_EXPIRY_MS);
+  var expires = "expires="+d.toUTCString();
+  document.cookie = name + "=" + value + ";" + expires + ";path=/";
 }

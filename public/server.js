@@ -1,11 +1,14 @@
 const QUESTIONS_FILE_NAME = "questions.txt";
 
-const QUESTION_TIME = 10000; // How long for people to answer a question
+const QUESTION_TIME = 20000; // How long for people to answer a question
 const QUESTION_INTERVAL=5000; // Time between questions
 
 const NUM_BOTS = 20;
 const BOT_PREFIX="BOT";
 const BOT_INTERVAL = 500;
+const MIN_BOT_RESPONSE_TIME = 10000;
+
+const PASSWORD_NOT_SET = "NOT_SET";
 
 // ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -20,6 +23,9 @@ const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
 const CMD_START_QUIZ = "startQuiz";
 const CMD_OPEN_REGISTRATION = "openRegistration";
 const CMD_ADMIN_STATUS = "adminStatus";
+const CMD_LOGIN = "login";
+const CMD_LOGIN_OK = "loginOK";
+const CMD_LOGIN_FAIL = "loginFail";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -36,7 +42,6 @@ app.use('/js',express.static(__dirname + '/js'));
 app.use('/images',express.static(__dirname + '/images'));
 app.use('/audio',express.static(__dirname + '/audio'));
 
-
 app.get('/player',function(req,res)
 {
     res.sendFile(__dirname+'/playerDisplay.html');
@@ -44,12 +49,12 @@ app.get('/player',function(req,res)
 
 app.get('/',function(req,res)
 {
-     res.sendFile(__dirname+'/admin.html');
+    res.sendFile(__dirname+'/admin.html');
 });
 
 app.get('/main',function(req,res)
 {
-     res.sendFile(__dirname+'/mainDisplay.html');
+    res.sendFile(__dirname+'/mainDisplay.html');
 });
 
 server.listen(process.env.PORT || 8080,function()
@@ -63,32 +68,61 @@ var currentCategory;
 var botTimer;
 var botAnswers=[];
 var questionIndex;
+var password;
 
 function init()
 {
     currentQuestion=null;
+    password=PASSWORD_NOT_SET;
     questions.loadQuestions(__dirname+"/"+QUESTIONS_FILE_NAME);
 }
 
 io.on('connection',function(socket)
 {
-    socket.on(CMD_OPEN_REGISTRATION,function()
+    // Admin functions
+    socket.on(CMD_LOGIN,function(aPassword)
     {
-        console.log("Server: Opening Registration");
-        registerBots();
-        sendToClient(CMD_ADMIN_STATUS,"Registration now open");
+        if (password==PASSWORD_NOT_SET)
+        {
+            password=aPassword;
+            sendToClient(CMD_LOGIN_OK,"");
+        }
+        else
+            sendToClient(CMD_LOGIN_FAIL,"");
     });    
 
+    socket.on(CMD_START_QUIZ,function(adminData)
+    {
+        if (adminData.password==password)
+        {
+            startQuiz(adminData.command);
+        }
+        else
+        {
+            sendToClient(CMD_LOGIN_FAIL,"Invalid password");
+        }        
+    });   
+
+    socket.on(CMD_OPEN_REGISTRATION,function(adminData)
+    {
+        if (adminData.password==password)
+        {
+            console.log("Server: Opening Registration");
+            registerBots();
+            sendToClient(CMD_ADMIN_STATUS,"Registration now open");
+        }
+        else
+        {
+            sendToClient(CMD_LOGIN_FAIL,"Invalid password");
+        }
+    });    
+
+    // Other functions
     socket.on(CMD_REGISTER,function(playerName)
     {
         sendToClient(CMD_REGISTERED,playerName);
-    });    
-
-    socket.on(CMD_START_QUIZ,function(quizName)
-    {
-        startQuiz(quizName);
-    });    
-    
+    });  
+   
     socket.on(CMD_DUPLICATE_PLAYER,function(playerName)
     {
         sendToClient(CMD_DUPLICATE_PLAYER,playerName);
@@ -149,11 +183,6 @@ function questionTimeout()
     setTimeout(askQuestion,QUESTION_INTERVAL);
 }
 
-function closeRegistration()
-{
-    sendToClient(CMD_QUIZ_READY);
-}
-
 PlayerAnswer=function(playerName,responseTime,answerIndex)
 {
     this.playerName=playerName;
@@ -179,7 +208,7 @@ function processBots()
 {
     for (var i=0;i<NUM_BOTS;i++)
     {
-        if (Math.random() > .99)
+        if ((new Date()-currentQuestion.getTimeAsked() > MIN_BOT_RESPONSE_TIME) && Math.random() > .97)
         {
             botAnswers[i].push(new AnswerEntry(currentQuestion.getCategory(),currentQuestion.getIndex(),Math.random()>.5,new Date()-currentQuestion.getTimeAsked()));
             console.log("CMD_PLAYER_DATA: Name: "+BOT_PREFIX+i);

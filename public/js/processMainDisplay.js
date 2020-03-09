@@ -15,6 +15,7 @@ const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
 const CMD_START_QUIZ = "startQuiz";
 const CMD_OPEN_REGISTRATION = "openRegistration";
 const CMD_ADMIN_STATUS = "adminStatus";
+const CMD_LOGIN = "login";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -118,15 +119,20 @@ displayCurrentQuestion=function(question,showAnswer)
     tableCurrentQuestion.innerHTML="";
     newRow=tableCurrentQuestion.insertRow();
     newCell = newRow.insertCell();  
-    newCell.colSpan = 2;
+    newCell.colSpan = 3;
     newCell.innerHTML = createSpan(question.text,"mainText","black");
     
   for (var i=0;i<question.answers.length;i++)
   {
       newRow=tableCurrentQuestion.insertRow();
       newCell = newRow.insertCell();  
+      newCell.width = '10%';
+      newCell.innerHTML = "";
+      newCell = newRow.insertCell();  
+      newCell.width = '10%';
       newCell.innerHTML = insertBullet();
       newCell = newRow.insertCell();  
+      newCell.width = '80%';
       newCell.innerHTML = createSpan(question.answers[i],"mainText",showAnswer&&i==question.answerIndex?"red":"black");
   };
 }
