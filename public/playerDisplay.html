@@ -12,7 +12,19 @@
         <audio id="liftMusic" preload="auto" loop> <source src="audio/liftMusic.wav" type="audio/wav"/></audio>
    </div>
     <div style="border-radius: 25px;margin:auto;background-color:#003200;">
-        <span id="gameTitle" class='clientHeaderText'></span>
+        <TABLE id='statusTable' style="margin:auto;">
+            <TR>
+                <TH colspan='2' style="margin:auto;"><span id="gameTitle" class='veryLargeText'></span></TH>
+            </TR>        
+            <TR>
+                <TH style="margin:auto;"><span class='veryLargeText'>Score:</span></TH>
+                <TH style="margin:auto;"><span id="playerScore" class='veryLargeText'>0</span></TH>
+            </TR>
+            <TR>
+                <TH style="margin:auto;"><span class='veryLargeText'>Response Time:</span></TH>
+                <TH style="margin:auto;"><span id="playerResponseTime" class='veryLargeText'>0.0</span></TH>       
+            </TR>        
+        </TABLE>
     </div>
 
     <div id='questionForm' class='popup'>

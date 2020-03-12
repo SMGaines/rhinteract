@@ -3,7 +3,7 @@ const QUESTIONS_FILE_NAME = "questions.txt";
 const QUESTION_TIME = 20000; // How long for people to answer a question
 const QUESTION_INTERVAL=5000; // Time between questions
 
-const NUM_BOTS = 20;
+const NUM_BOTS = 30;
 const BOT_PREFIX="BOT";
 const BOT_INTERVAL = 500;
 const MIN_BOT_RESPONSE_TIME = 10000;
@@ -26,6 +26,7 @@ const CMD_ADMIN_STATUS = "adminStatus";
 const CMD_LOGIN = "login";
 const CMD_LOGIN_OK = "loginOK";
 const CMD_LOGIN_FAIL = "loginFail";
+const CMD_GET_CATEGORIES = "getCategories";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -69,10 +70,12 @@ var botTimer;
 var botAnswers=[];
 var questionIndex;
 var password;
+var quizInProgress;
 
 function init()
 {
     currentQuestion=null;
+    quizInProgress=false;
     password=PASSWORD_NOT_SET;
     questions.loadQuestions(__dirname+"/"+QUESTIONS_FILE_NAME);
 }
@@ -91,11 +94,41 @@ io.on('connection',function(socket)
             sendToClient(CMD_LOGIN_FAIL,"");
     });    
 
+    socket.on(CMD_GET_CATEGORIES,function(adminData)
+    {
+        if (adminData.password==password)
+        {
+            sendToClient(CMD_GET_CATEGORIES,questions.getCategories());
+        }
+        else
+        {
+            sendToClient(CMD_LOGIN_FAIL,"Invalid password");
+        }        
+    });   
+
+    socket.on(CMD_OPEN_REGISTRATION,function(adminData)
+    {
+        if (adminData.password==password)
+        {
+            console.log("Server: Opening Registration");
+            registerBots();
+            sendToClient(CMD_ADMIN_STATUS,"Registration now open");
+        }
+        else
+        {
+            sendToClient(CMD_LOGIN_FAIL,"Invalid password");
+        }
+
+    });    
+
     socket.on(CMD_START_QUIZ,function(adminData)
     {
         if (adminData.password==password)
         {
-            startQuiz(adminData.command);
+            if (quizInProgress)
+                sendToClient(CMD_ADMIN_STATUS,"Quiz not started: Quiz in progress");
+            else
+                startQuiz(adminData.arg0,adminData.arg1);
         }
         else
         {
@@ -144,6 +177,7 @@ startQuiz=function(category,index)
     if (questions.isValidCategory(category))
     {
         console.log("startQuiz: category: "+category);
+        quizInProgress=true;
         currentCategory=category;
         questionIndex=(typeof index == 'undefined')?0:index;
         setTimeout(askQuestion,QUESTION_INTERVAL);
@@ -164,6 +198,7 @@ function askQuestion()
     if (currentQuestion == null)
     {
         console.log("End of quiz: category: "+currentCategory);
+        quizInProgress=false;
         sendToClient(CMD_END_OF_QUIZ);
     }  
     else

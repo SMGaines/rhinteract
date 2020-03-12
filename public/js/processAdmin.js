@@ -17,6 +17,7 @@ const CMD_ADMIN_STATUS = "adminStatus";
 const CMD_LOGIN = "login";
 const CMD_LOGIN_OK = "loginOK";
 const CMD_LOGIN_FAIL = "loginFail";
+const CMD_GET_CATEGORIES = "getCategories";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -38,6 +39,11 @@ socket.on(CMD_REGISTERED,function(data)
     playerDisplay();
 });
 
+socket.on(CMD_GET_CATEGORIES,function(data)
+{
+    buildQuizList(data.msg);
+});
+
 socket.on(CMD_ADMIN_STATUS,function(data)
 {
     console.log("CMD_ADMIN_STATUS: "+data.msg);
@@ -54,6 +60,7 @@ socket.on(CMD_LOGIN_OK,function(data)
 {
     console.log("CMD_LOGIN_OK: "+data.msg);
     closePasswordForm();
+    socket.emit(CMD_GET_CATEGORIES,new AdminData(myPassword,""));
 });
 
 function startQuiz(quizName)
@@ -65,6 +72,25 @@ function openRegistration()
 {
     console.log("Opening registration");
     socket.emit(CMD_OPEN_REGISTRATION,new AdminData(myPassword,""));
+}
+
+function buildQuizList(categories)
+{
+  var regTable = document.getElementById('quizTable');
+  var newRow,newCell;
+  regTable.innerHTML="";
+
+  for (var i=0;i<categories.length;i++)
+  {
+      newRow=regTable.insertRow();
+      newCell = newRow.insertCell();  
+      newCell.innerHTML = createQuizButton(categories[i]);
+  };
+}
+
+function createQuizButton(text)
+{
+  return "<button class='adminButton' type='button' onclick='startQuiz(&quot;"+text+"&quot;)'>Start Quiz: "+text+"</button>";
 }
 
 function playerDisplay()
@@ -109,10 +135,11 @@ function closePasswordForm()
 	document.getElementById("loginForm").style.display= "none";
 }
 
-AdminData=function(aPassword,aCommand)
+AdminData=function(aPassword,arg0,arg1)
 {
     this.password=aPassword;
-    this.command=aCommand;
+    this.arg0=arg0;
+    this.arg1=arg1;
 }
 
 function getCookie(name) 

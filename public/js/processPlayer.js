@@ -69,7 +69,7 @@ socket.on(CMD_QUIZ_READY,function(data)
 socket.on(CMD_QUESTION_TIMEOUT,function(data)
 {
   console.log("Question timed out");
-  closeQuestionForm();
+  updatePlayerStats();
 });
 
 socket.on(CMD_NEW_QUESTION,function(data)
@@ -138,12 +138,17 @@ function closeGameWaitForm()
 answer = function(selectedAnswerIndex)
 {
     closeQuestionForm();
-    console.log(new Date()+"/"+new Date(currentQuestion.timeAsked));
     var responseTime=new Date()-new Date(currentQuestion.timeAsked);
     var cookieName=COOKIE_QUIZ_PREFIX+currentQuestion.category+COOKIE_SEPARATOR+currentQuestion.index;
-    console.log("answer: Setting cookie:["+cookieName+"]");
     setCookie(cookieName,(currentQuestion.answerIndex==selectedAnswerIndex?COOKIE_CORRECT_ANSWER:COOKIE_INCORRECT_ANSWER)+COOKIE_SEPARATOR+responseTime);
     socket.emit(CMD_PLAYER_DATA,getPlayerData());
+}
+
+updatePlayerStats=function()
+{
+  var playerSummary=createPlayerSummary(getPlayerData());
+  document.getElementById('playerScore').innerHTML=playerSummary.numCorrect;
+  document.getElementById('playerResponseTime').innerHTML=playerSummary.totalResponseTime;
 }
 
 getPlayerData=function()
@@ -261,4 +266,33 @@ function createSpan(text,cssClass,colour)
 function createButton(text,cssClass,onClickIndex)
 {
     return "<button class='"+cssClass+"' onclick='answer("+onClickIndex+")'>"+text+"</button>";
+}
+
+function createPlayerSummary(playerData)
+{
+    var totalResponseTime=0;
+    var numCorrect=0;
+    var previousAnswers=[];
+
+    for (var i=0;i<playerData.answers.length;i++)
+    {
+        if (!questionAlreadyAnswered(playerData.answers[i],previousAnswers))
+        {
+            if (playerData.answers[i].isCorrect)
+            {
+                totalResponseTime+=playerData.answers[i].responseTime;
+                numCorrect++;
+            }
+            previousAnswers.push(playerData.answers[i]);
+        }   
+    }
+    console.log("CPS: "+playerData.name+"/"+numCorrect+"/"+totalResponseTime);
+    return new PlayerSummary(playerData.name,numCorrect,totalResponseTime);
+}
+
+PlayerSummary=function(name,numCorrect,totalTime)
+{
+    this.name=name;
+    this.numCorrect=numCorrect;
+    this.totalResponseTime=totalTime;
 }

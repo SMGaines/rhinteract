@@ -21,12 +21,9 @@
         </TABLE>
     </div>
     <div class='mainPanel' style="position:absolute;width:1000px; height: 500px;top:170px; left:10px; z-index:1">  
-        <table>
-            <TR><TH style='padding: 20px;'><button class='adminButton' type='button' onclick="openRegistration()">Open Registration</button></TH></TR>
-            <TR><TH style='padding: 20px;'><button class='adminButton' type='button' onclick="startQuiz('General')">Start Quiz: General</button></TH></TR>
-            <TR><TH style='padding: 20px;'><button class='adminButton' type='button' onclick="startQuiz('RHEL')">Start Quiz: RHEL</button></TH></TR>
-            <TR><TH style='padding: 20px;'><button class='adminButton' type='button' onclick="startQuiz('HCI')">Start Quiz: HCI</button></TH></tr>
-            <TR><TH style='padding: 20px;'><button class='adminButton' type='button' onclick="startQuiz('CND')">Start Quiz: CND</button></TH></TR>
+        <button class='adminButton' type='button' onclick="openRegistration()">Open Registration</button>
+        <table id='quizTable'>
+            <TR><TH ><button class='adminButton' type='button' onclick="startQuiz('Cloud-native Development')">Start Quiz: CND</button></TH></TR>
         </table>
     </div>
     

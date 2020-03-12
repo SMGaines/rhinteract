@@ -1,6 +1,7 @@
 const GAME_TITLE = "RH INTERACT v0.1";
 const NONE = -1;
 const NUM_DISPLAYED_PLAYERS = 5;
+const QUESTION_TIME_IN_SECONDS = 20; // How long for people to answer a question
 
 // ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -41,8 +42,11 @@ socket.on(CMD_PLAYER_DATA,function(data)
 socket.on(CMD_NEW_QUESTION,function(data)
 {
     currentQuestion=data.msg;
+    questionSecondsLeft=QUESTION_TIME_IN_SECONDS;
+    setTimeout(questionTimer,1000);
     currentAnswers=[];
     clearCurrentAnswers();
+    displayQuizStatus("Quiz: '"+currentQuestion.category+"'");
     displayCurrentQuestion(currentQuestion,false);
 });
 
@@ -51,10 +55,16 @@ socket.on(CMD_QUIZ_READY,function(data)
     console.log("Quiz ready");
 });
 
+socket.on(CMD_START_QUIZ,function(data)
+{
+    console.log("Quiz: "+data.msg+" about to start");
+    displayQuizStatus("Quiz: '"+data.msg+"' about to start");
+});
+
 socket.on(CMD_END_OF_QUIZ,function(data)
 {
     console.log("End of quiz");
-    displayEndOfQuiz();
+    displayQuizStatus("End of quiz");
     clearCurrentAnswers();
 });
 
@@ -63,6 +73,14 @@ socket.on(CMD_QUESTION_TIMEOUT,function(data)
   displayCurrentQuestion(currentQuestion,true);
   displayLeaderboard();
 });
+
+questionTimer=function()
+{
+    questionSecondsLeft--;
+    displayTimeLeft();
+    if (questionSecondsLeft > 0)
+        setTimeout(questionTimer,1000);
+}
 
 displayLeaderboard=function()
 {
@@ -119,8 +137,11 @@ displayCurrentQuestion=function(question,showAnswer)
     tableCurrentQuestion.innerHTML="";
     newRow=tableCurrentQuestion.insertRow();
     newCell = newRow.insertCell();  
-    newCell.colSpan = 3;
-    newCell.innerHTML = createSpan(question.text,"mainText","black");
+    newCell.colSpan = 1;
+    newCell.innerHTML = createSpan((question.index+1),"questionText","black");
+    newCell = newRow.insertCell();  
+    newCell.colSpan = 2;
+    newCell.innerHTML = createSpan(question.text,"questionText","black");
     
   for (var i=0;i<question.answers.length;i++)
   {
@@ -133,48 +154,35 @@ displayCurrentQuestion=function(question,showAnswer)
       newCell.innerHTML = insertBullet();
       newCell = newRow.insertCell();  
       newCell.width = '80%';
-      newCell.innerHTML = createSpan(question.answers[i],"mainText",showAnswer&&i==question.answerIndex?"red":"black");
+      newCell.innerHTML = createSpan(question.answers[i],"questionText",showAnswer&&i==question.answerIndex?"red":"black");
   };
 }
 
-displayEndOfQuiz=function()
+displayQuizStatus=function(statusMsg)
 {
-    var tableCurrentQuestion = document.getElementById('tableCurrentQuestion');
-    var newRow,newCell;
-    tableCurrentQuestion.innerHTML="";
-    newRow=tableCurrentQuestion.insertRow();
-    newCell = newRow.insertCell();  
-    newCell.colSpan = 2;
-    newCell.innerHTML = createSpan("Quiz complete","mainText","black");
+    document.getElementById('quizStatus').innerHTML = statusMsg;
 }
 
 displayCurrentAnswers=function()
 {
-    var tableCurrentAnswers = document.getElementById('tableCurrentAnswers');
-    var newRow,newCell;
-    tableCurrentAnswers.innerHTML="";
-    newRow=tableCurrentAnswers.insertRow();
-    newCell = newRow.insertCell();  
-    newCell.width = '30%';
-    newCell.innerHTML = createSpan("Name","mainText","black");
-    newCell = newRow.insertCell();  
-    newCell.width = '10%';
-    newCell.innerHTML = createSpan("Time","mainText","black");
-    
-    for (var i=0;i<Math.min(5,currentAnswers.length);i++)
+    var numResponded=0;
+    for (var i=0;i<currentAnswers.length;i++)
     {
-        newRow=tableCurrentAnswers.insertRow();
-        newCell = newRow.insertCell();  
-        newCell.innerHTML = createSpan(currentAnswers[i].name,"mainText","black");
-        newCell = newRow.insertCell();  
-        newCell.innerHTML = createSpan(formatTime(currentAnswers[i].responseTime),"mainText","black");
+        if (currentAnswers[i].category==currentQuestion.category && currentAnswers[i].index==currentQuestion.index)
+            numResponded++;
     };
+    document.getElementById('currentAnswers').innerHTML=createSpan("Num responses:"+numResponded,"questionText","black");
+}
+
+displayTimeLeft=function()
+{
+    document.getElementById('timeLeft').innerHTML=createSpan(questionSecondsLeft,"headerText","red");
 }
 
 clearCurrentAnswers=function()
 {
-    var tableCurrentAnswers = document.getElementById('tableCurrentAnswers');
-    tableCurrentAnswers.innerHTML="";
+    document.getElementById('currentAnswers').innerHTML="";
+    document.getElementById('timeLeft').innerHTML="";
 }
 
 function createLeaderBoardSpan(text)

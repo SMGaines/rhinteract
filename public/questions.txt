@@ -7,7 +7,7 @@ a:Subscribe
 q:ELS stands for Extended Lifecycle Support
 A:True
 a:False
-c:CND
+c:Cloud-native Development
 q:Apache Camel is the principal technology found in ????
 a:Red Hat Decision Manager
 a:Red Hat A-MQ
@@ -65,7 +65,7 @@ a:Red Hat 3Scale
 A:Red Hat Decision Manager
 a:Red Hat OpenShift Container Platform
 a:Red Hat Ansible Automation Platform
-c:HCI
+c:Hybrid Cloud Infrastructure
 q:Red Hat OpenStack Platform is based on which Red Hat sponsored Community?
 a:OKD
 a:AWX

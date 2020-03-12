@@ -6,6 +6,7 @@ const WRONG_ANSWER_PREFIX = "a:";
 var question=require("./question.js");
 
 var questions=[];
+var categories=[];
 
 /*
     Question is of form: 
@@ -26,6 +27,7 @@ exports.loadQuestions=function(questionsFile)
         if (line.startsWith(CATEGORY_PREFIX))
         {
             category=line.substring(CATEGORY_PREFIX.length);
+            categories.push(category);
             questionIndex=0;
         }
         else if (line.startsWith(QUESTION_PREFIX))
@@ -45,6 +47,11 @@ exports.loadQuestions=function(questionsFile)
     {
         console.log("loadQuestions: Read in "+questions.length+" questions");
     });
+}
+
+exports.getCategories=function()
+{
+    return categories;
 }
 
 exports.getQuestion=function(category,index)
