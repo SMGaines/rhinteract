@@ -39,6 +39,12 @@ socket.on(CMD_REGISTERED,function(data)
     playerDisplay();
 });
 
+socket.on(CMD_OPEN_REGISTRATION,function(data)
+{
+    socket.emit(CMD_GET_CATEGORIES,new AdminData(myPassword,""));
+    showAdminStatus(data.msg);
+});
+
 socket.on(CMD_GET_CATEGORIES,function(data)
 {
     buildQuizList(data.msg);
@@ -47,7 +53,7 @@ socket.on(CMD_GET_CATEGORIES,function(data)
 socket.on(CMD_ADMIN_STATUS,function(data)
 {
     console.log("CMD_ADMIN_STATUS: "+data.msg);
-    document.getElementById('quizStatus').innerHTML=createSpan(data.msg);
+    showAdminStatus(data.msg);
 });
 
 socket.on(CMD_LOGIN_FAIL,function(data)
@@ -60,7 +66,6 @@ socket.on(CMD_LOGIN_OK,function(data)
 {
     console.log("CMD_LOGIN_OK: "+data.msg);
     closePasswordForm();
-    socket.emit(CMD_GET_CATEGORIES,new AdminData(myPassword,""));
 });
 
 function startQuiz(quizName)
@@ -86,6 +91,11 @@ function buildQuizList(categories)
       newCell = newRow.insertCell();  
       newCell.innerHTML = createQuizButton(categories[i]);
   };
+}
+
+function showAdminStatus(msg)
+{
+  document.getElementById('quizStatus').innerHTML=createSpan(msg);
 }
 
 function createQuizButton(text)

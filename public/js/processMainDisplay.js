@@ -17,6 +17,9 @@ const CMD_START_QUIZ = "startQuiz";
 const CMD_OPEN_REGISTRATION = "openRegistration";
 const CMD_ADMIN_STATUS = "adminStatus";
 const CMD_LOGIN = "login";
+const CMD_LOGIN_OK = "loginOK";
+const CMD_LOGIN_FAIL = "loginFail";
+const CMD_GET_CATEGORIES = "getCategories";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 
@@ -48,6 +51,7 @@ socket.on(CMD_NEW_QUESTION,function(data)
     clearCurrentAnswers();
     displayQuizStatus("Quiz: '"+currentQuestion.category+"'");
     displayCurrentQuestion(currentQuestion,false);
+    displayCurrentAnswers();
 });
 
 socket.on(CMD_QUIZ_READY,function(data)
@@ -58,6 +62,7 @@ socket.on(CMD_QUIZ_READY,function(data)
 socket.on(CMD_START_QUIZ,function(data)
 {
     console.log("Quiz: "+data.msg+" about to start");
+    displayLeaderboard();
     displayQuizStatus("Quiz: '"+data.msg+"' about to start");
 });
 
@@ -138,7 +143,7 @@ displayCurrentQuestion=function(question,showAnswer)
     newRow=tableCurrentQuestion.insertRow();
     newCell = newRow.insertCell();  
     newCell.colSpan = 1;
-    newCell.innerHTML = createSpan((question.index+1),"questionText","black");
+    newCell.innerHTML = createSpan((question.index+1),"timeText","red");
     newCell = newRow.insertCell();  
     newCell.colSpan = 2;
     newCell.innerHTML = createSpan(question.text,"questionText","black");
@@ -154,7 +159,7 @@ displayCurrentQuestion=function(question,showAnswer)
       newCell.innerHTML = insertBullet();
       newCell = newRow.insertCell();  
       newCell.width = '80%';
-      newCell.innerHTML = createSpan(question.answers[i],"questionText",showAnswer&&i==question.answerIndex?"red":"black");
+      newCell.innerHTML = createSpan(question.answers[i],showAnswer&&i==question.answerIndex?"questionTextReveal":"questionText","black");
   };
 }
 
@@ -171,17 +176,17 @@ displayCurrentAnswers=function()
         if (currentAnswers[i].category==currentQuestion.category && currentAnswers[i].index==currentQuestion.index)
             numResponded++;
     };
-    document.getElementById('currentAnswers').innerHTML=createSpan("Num responses:"+numResponded,"questionText","black");
+    document.getElementById('numResponses').innerHTML=numResponded;
 }
 
 displayTimeLeft=function()
 {
-    document.getElementById('timeLeft').innerHTML=createSpan(questionSecondsLeft,"headerText","red");
+    document.getElementById('timeLeft').innerHTML=questionSecondsLeft;
 }
 
 clearCurrentAnswers=function()
 {
-    document.getElementById('currentAnswers').innerHTML="";
+    document.getElementById('numResponses').innerHTML="";
     document.getElementById('timeLeft').innerHTML="";
 }
 

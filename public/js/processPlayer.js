@@ -22,6 +22,9 @@ const CMD_START_QUIZ = "startQuiz";
 const CMD_OPEN_REGISTRATION = "openRegistration";
 const CMD_ADMIN_STATUS = "adminStatus";
 const CMD_LOGIN = "login";
+const CMD_LOGIN_OK = "loginOK";
+const CMD_LOGIN_FAIL = "loginFail";
+const CMD_GET_CATEGORIES = "getCategories";
 
 // ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
 

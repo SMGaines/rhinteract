@@ -82,7 +82,20 @@
   border: none;
   background-color: #FFFFFF;
   color: #000000;
+  width: 100%;
   padding: 5px 5px;
+  font-size: 48px;
+  font-family: "RHFont";
+}
+
+.timeText {
+  text-align:left;
+  display: block;
+  border: none;
+  background-color: #FFFFFF;
+  color: #FF0000;
+  width: 80%;
+  height: 80%;
   font-size: 64px;
   font-family: "RHFont";
 }
@@ -104,7 +117,7 @@
   border: none;
   background-color: #FFFFFF;
   color: #000000;
-  padding: 10px 10px;
+  padding: 5px 5px;
   font-size: 36px;
   font-family: "RHFont";
   text-align:center;
@@ -114,6 +127,17 @@
   margin: auto;
   display: block;
   border: none;
+  background-color: #FFFFFF;
+  color: #000000;
+  padding: 10px 10px;
+  font-size: 36px;
+  font-family: "RHFont";
+}
+
+.questionTextReveal {
+  display: inline;
+  border-radius: 15px;
+  border: 3px solid red;
   background-color: #FFFFFF;
   color: #000000;
   padding: 10px 10px;

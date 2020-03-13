@@ -2,6 +2,7 @@ const QUESTIONS_FILE_NAME = "questions.txt";
 
 const QUESTION_TIME = 20000; // How long for people to answer a question
 const QUESTION_INTERVAL=5000; // Time between questions
+const ANSWER_REVEAL_INTERVAL=5000;
 
 const NUM_BOTS = 30;
 const BOT_PREFIX="BOT";
@@ -106,21 +107,6 @@ io.on('connection',function(socket)
         }        
     });   
 
-    socket.on(CMD_OPEN_REGISTRATION,function(adminData)
-    {
-        if (adminData.password==password)
-        {
-            console.log("Server: Opening Registration");
-            registerBots();
-            sendToClient(CMD_ADMIN_STATUS,"Registration now open");
-        }
-        else
-        {
-            sendToClient(CMD_LOGIN_FAIL,"Invalid password");
-        }
-
-    });    
-
     socket.on(CMD_START_QUIZ,function(adminData)
     {
         if (adminData.password==password)
@@ -142,7 +128,7 @@ io.on('connection',function(socket)
         {
             console.log("Server: Opening Registration");
             registerBots();
-            sendToClient(CMD_ADMIN_STATUS,"Registration now open");
+            sendToClient(CMD_OPEN_REGISTRATION,"Registration now open");
         }
         else
         {
@@ -214,6 +200,11 @@ function questionTimeout()
 {
     console.log("Question timed out");
     clearInterval(botTimer);
+    setTimeout(answerReveal,ANSWER_REVEAL_INTERVAL);
+}
+
+function answerReveal()
+{
     sendToClient(CMD_QUESTION_TIMEOUT);
     setTimeout(askQuestion,QUESTION_INTERVAL);
 }
