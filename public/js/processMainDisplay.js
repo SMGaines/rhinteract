@@ -45,13 +45,14 @@ socket.on(CMD_PLAYER_DATA,function(data)
 socket.on(CMD_NEW_QUESTION,function(data)
 {
     currentQuestion=data.msg;
-    questionSecondsLeft=QUESTION_TIME_IN_SECONDS;
-    setTimeout(questionTimer,1000);
     currentAnswers=[];
     clearCurrentAnswers();
-    displayQuizStatus("Quiz: '"+currentQuestion.category+"'");
+    questionSecondsLeft=QUESTION_TIME_IN_SECONDS;
+    setTimeout(questionTimer,1000);
+    displayQuizStatus(currentQuestion.category);
     displayCurrentQuestion(currentQuestion,false);
     displayCurrentAnswers();
+    displayTimeLeft();
 });
 
 socket.on(CMD_QUIZ_READY,function(data)
@@ -63,7 +64,7 @@ socket.on(CMD_START_QUIZ,function(data)
 {
     console.log("Quiz: "+data.msg+" about to start");
     displayLeaderboard();
-    displayQuizStatus("Quiz: '"+data.msg+"' about to start");
+    displayQuizStatus(data.msg+" about to start");
 });
 
 socket.on(CMD_END_OF_QUIZ,function(data)
@@ -186,6 +187,7 @@ displayTimeLeft=function()
 
 clearCurrentAnswers=function()
 {
+    document.getElementById('tableCurrentQuestion').innerHTML="";
     document.getElementById('numResponses').innerHTML="";
     document.getElementById('timeLeft').innerHTML="";
 }

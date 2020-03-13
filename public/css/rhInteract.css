@@ -88,18 +88,6 @@
   font-family: "RHFont";
 }
 
-.timeText {
-  text-align:left;
-  display: block;
-  border: none;
-  background-color: #FFFFFF;
-  color: #FF0000;
-  width: 80%;
-  height: 80%;
-  font-size: 64px;
-  font-family: "RHFont";
-}
-
 .mainText {
   margin: auto;
   display: block;
@@ -123,14 +111,30 @@
   text-align:center;
 }
 
-.questionText {
-  margin: auto;
+.timeText {
+  text-align:left;
   display: block;
   border: none;
   background-color: #FFFFFF;
-  color: #000000;
+  color: #FF0000;
   padding: 10px 10px;
+  font-size: 64px;
+  font-family: "RHFont";
+}
+
+.questionText {
+  display: inline;
+  background-color: #FFFFFF;
+  color: #000000;
   font-size: 36px;
+  font-family: "RHFont";
+}
+
+.statusText {
+  display: inline;
+  background-color: #FFFFFF;
+  color: #FF0000;
+  font-size: 48px;
   font-family: "RHFont";
 }
 
