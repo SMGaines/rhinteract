@@ -3,13 +3,12 @@ const NONE = -1;
 const NUM_DISPLAYED_PLAYERS = 5;
 const QUESTION_TIME_IN_SECONDS = 20; // How long for people to answer a question
 
-// ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
+// ******* Shared list of constants between server.js, processMainDisplay.js, processAdmin.js and processPlayer.js *******
 
 const CMD_REGISTER="register";
 const CMD_REGISTERED="registered";
 const CMD_NEW_QUESTION = "newQuestion";
 const CMD_QUESTION_TIMEOUT = "questionTimeout";
-const CMD_QUIZ_READY = "quizReady";
 const CMD_END_OF_QUIZ = "quizEnd";
 const CMD_PLAYER_DATA = 'playerData';
 const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
@@ -20,8 +19,11 @@ const CMD_LOGIN = "login";
 const CMD_LOGIN_OK = "loginOK";
 const CMD_LOGIN_FAIL = "loginFail";
 const CMD_GET_CATEGORIES = "getCategories";
+const CMD_TIME_LEFT = 'timeLeft';
+const CMD_PAUSE_QUIZ = 'pauseQuiz';
+const CMD_RESTART_QUIZ = 'restartQuiz';
 
-// ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
+// ******* End of shared list of constants between server.js, processMainDisplay.js, processAdmin.js and processPlayer.js *******
 
 var currentQuestion;
 var currentAnswers=[];
@@ -47,17 +49,9 @@ socket.on(CMD_NEW_QUESTION,function(data)
     currentQuestion=data.msg;
     currentAnswers=[];
     clearCurrentAnswers();
-    questionSecondsLeft=QUESTION_TIME_IN_SECONDS;
-    setTimeout(questionTimer,1000);
     displayQuizStatus(currentQuestion.category);
     displayCurrentQuestion(currentQuestion,false);
     displayCurrentAnswers();
-    displayTimeLeft();
-});
-
-socket.on(CMD_QUIZ_READY,function(data)
-{
-    console.log("Quiz ready");
 });
 
 socket.on(CMD_START_QUIZ,function(data)
@@ -65,6 +59,23 @@ socket.on(CMD_START_QUIZ,function(data)
     console.log("Quiz: "+data.msg+" about to start");
     displayLeaderboard();
     displayQuizStatus(data.msg+" about to start");
+});
+
+socket.on(CMD_RESTART_QUIZ,function(data)
+{
+  console.log("Quiz: "+data.msg+" restarting");
+  displayQuizStatus(data.msg);
+});
+
+socket.on(CMD_TIME_LEFT,function(data)
+{
+    displayTimeLeft(data.msg);
+});
+
+socket.on(CMD_PAUSE_QUIZ,function(data)
+{
+  console.log("Quiz paused");
+  displayQuizStatus("Quiz paused");
 });
 
 socket.on(CMD_END_OF_QUIZ,function(data)
@@ -79,14 +90,6 @@ socket.on(CMD_QUESTION_TIMEOUT,function(data)
   displayCurrentQuestion(currentQuestion,true);
   displayLeaderboard();
 });
-
-questionTimer=function()
-{
-    questionSecondsLeft--;
-    displayTimeLeft();
-    if (questionSecondsLeft > 0)
-        setTimeout(questionTimer,1000);
-}
 
 displayLeaderboard=function()
 {
@@ -180,7 +183,7 @@ displayCurrentAnswers=function()
     document.getElementById('numResponses').innerHTML=numResponded;
 }
 
-displayTimeLeft=function()
+displayTimeLeft=function(questionSecondsLeft)
 {
     document.getElementById('timeLeft').innerHTML=questionSecondsLeft;
 }

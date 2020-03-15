@@ -11,40 +11,53 @@
 	<div id='audio'>
         <audio id="liftMusic" preload="auto" loop> <source src="audio/liftMusic.wav" type="audio/wav"/></audio>
    </div>
-    <div style="border-radius: 25px;margin:auto;background-color:#003200;">
+    <div id='statusForm' class='popup' >
         <TABLE id='statusTable' style="margin:auto;">
             <TR>
-                <TH colspan='2' style="margin:auto;"><span id="gameTitle" class='veryLargeText'></span></TH>
-            </TR>        
+                <TH><img src='images/rhlogo.png'></TH>
+            </TR>
+            <TR style='padding-bottom:100px;'>
+                 <TH><span  class='playerText'>Interact</span></TH>
+            </TR>      
+            <TR></TR>  
             <TR>
-                <TH style="margin:auto;"><span class='veryLargeText'>Score:</span></TH>
-                <TH style="margin:auto;"><span id="playerScore" class='veryLargeText'>0</span></TH>
+                <TH><span class='playerText'>Score</span></TH>
+            </TR>
+            <TR style='padding-bottom:100px;'>
+                 <TH><span id="playerScore" style='color:red' class='playerText'>0</span></TH>
             </TR>
             <TR>
-                <TH style="margin:auto;"><span class='veryLargeText'>Response Time:</span></TH>
-                <TH style="margin:auto;"><span id="playerResponseTime" class='veryLargeText'>0.0</span></TH>       
+                <TH style="margin:auto;"><span class='playerText'>Time</span></TH>
+            </TR>
+            <TR style='padding-bottom:100px;'>
+                <TH style="margin:auto;"><span id="playerResponseTime" style='color:red' class='playerText'>0.0</span></TH>       
+            </TR>        
+            <TR>
+                <TH style="margin:auto;"><span class='playerText'>Quiz status</span></TH>
+            </TR>
+            <TR>
+                <TH style="margin:auto;"><span id="quizStatus" style='color:red' class='playerText'></span></TH>       
             </TR>        
         </TABLE>
     </div>
 
     <div id='questionForm' class='popup'>
-        <TABLE id='questionTable' style="margin:auto;">
+        <TABLE id='questionTable' style='border-spacing: 15px;'>
        </TABLE>
     </div>
 
 	<div class='popup' id='gameWaitForm'>
         <TABLE style="margin:auto;">
-            <TR><TH style='padding: 20px;' class='headerText'>Waiting for Quiz to start</TH></TR>
-            <TR><TH style="margin:auto;"><span id="gameWaitStatus" class='veryLargeText'></span></TH></TR>
+            <TR><TH style='padding: 20px;' class='playerText'>Waiting for Quiz to start</TH></TR>
         </TABLE>
     </div>
 
     <div class='popup' id='registrationForm'>
         <TABLE style="margin:auto;">
-            <TR><TH style='padding: 20px;' class='headerText'>Register</TH></TR>
-            <TR><TH style='padding: 20px;'><input class='veryLargeText' id='regName' type='text' required pattern='[a-zA-Z0-9]+'' minlength='3' maxlength='10'/></TH></TR>
-            <TR><TH style='padding: 20px;'><button id = 'regButton' class='veryLargeText' type='button' onclick='processRegistrationForm()'>OK</button></TH></TR>
-            <TR><TH style='padding: 20px;'><span id="regStatus" class='largeText'>Name must be 3-8 alphanumeric chars</span></TH></TR>
+            <TR><TH style='padding: 20px;' class='playerText'>Register</TH></TR>
+            <TR><TH style='padding: 20px;'><input class='playerText' id='regName' type='text' required pattern='[a-zA-Z0-9]+'' minlength='3' maxlength='10'/></TH></TR>
+            <TR><TH style='padding: 20px;'><button id = 'regButton' class='playerText' type='button' onclick='processRegistrationForm()'>OK</button></TH></TR>
+            <TR><TH style='padding: 20px;'><span id="regStatus" class='playerText'>Name must be 3-8 alphanumeric chars</span></TH></TR>
         </TABLE>
     </div>
 </body>

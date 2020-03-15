@@ -9,8 +9,8 @@
     display: none;
     position:absolute;
     top:0%;
-    left:0%;
-    width:100%;  
+    left:10%;
+    width:80%;  
     background-color: #FFFFFF;
     height:100%;   
     margin: auto; 
@@ -41,15 +41,45 @@
     transform: translateY(4px);
   }
 
+  .playerButton {
+    border-radius: 25px;
+    border-style: solid;
+    border-color: #FF0000;
+    margin: auto;
+    display: block;
+    background-color: #FFFFFF;
+    color: #FF0000;
+    padding: 10px 10px;
+    font-size: 64px;
+    font-family: "RHFont";
+    cursor: pointer;
+    text-align: center;
+    z-index: 9;
+    box-shadow: 0 9px #999;
+  }
+  
+  .playerButton:active {
+      background-color: #FFFFFF;
+      box-shadow: 0 5px #666;
+      transform: translateY(4px);
+    }
+  
+.adminText {
+      display: inline;
+      background-color: #FFFFFF;
+      color: #000000;
+      font-size: 28px;
+      font-family: "RHFont";
+    }
+
 .adminButton {
   border-radius: 25px;
-  border-style: solid;
-  border-color: #FF0000;
+    border-style: solid;
+    border-color: #FF0000;  
+    display: block;
 
-  display: block;
-  border: none;
   background-color: #FFFFFF;
-  color: #FF0000;
+  color: #000000;
   padding: 20px 20px;
   font-size: 28px;
   font-family: "RHFont";
@@ -73,6 +103,29 @@
   color: #000000;
   padding: 10px 10px;
   font-size: 128px;
+  font-family: "RHFont";
+}
+
+.playerText {
+  margin: auto;
+  display: block;
+  border: none;
+  background-color: #FFFFFF;
+  color: #000000;
+  padding: 10px 10px;
+  font-size: 64px;
+  font-family: "RHFont";
+}
+
+.adminSelect {
+  display: block;
+  border-radius: 25px;
+  border-style: solid;
+  border-color: #FF0000;
+  background-color: #FFFFFF;
+  color: #000000;
+  padding: 10px 10px;
+  font-size: 32px;
   font-family: "RHFont";
 }
 

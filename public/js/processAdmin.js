@@ -1,13 +1,12 @@
 const COOKIE_PASSWORD_PARAMETER = "password";
 const COOKIE_EXPIRY_MS = 36*60*60*1000; // 36 hours - the length of the training
 
-// ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
+// ******* Shared list of constants between server.js, processMainDisplay.js, processAdmin.js and processPlayer.js *******
 
 const CMD_REGISTER="register";
 const CMD_REGISTERED="registered";
 const CMD_NEW_QUESTION = "newQuestion";
 const CMD_QUESTION_TIMEOUT = "questionTimeout";
-const CMD_QUIZ_READY = "quizReady";
 const CMD_END_OF_QUIZ = "quizEnd";
 const CMD_PLAYER_DATA = 'playerData';
 const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
@@ -18,8 +17,11 @@ const CMD_LOGIN = "login";
 const CMD_LOGIN_OK = "loginOK";
 const CMD_LOGIN_FAIL = "loginFail";
 const CMD_GET_CATEGORIES = "getCategories";
+const CMD_TIME_LEFT = 'timeLeft';
+const CMD_PAUSE_QUIZ = 'pauseQuiz';
+const CMD_RESTART_QUIZ = 'restartQuiz';
 
-// ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
+// ******* End of shared list of constants between server.js, processMainDisplay.js, processAdmin.js and processPlayer.js *******
 
 var players = [];
 var myPassword;
@@ -41,7 +43,6 @@ socket.on(CMD_REGISTERED,function(data)
 
 socket.on(CMD_OPEN_REGISTRATION,function(data)
 {
-    socket.emit(CMD_GET_CATEGORIES,new AdminData(myPassword,""));
     showAdminStatus(data.msg);
 });
 
@@ -62,15 +63,32 @@ socket.on(CMD_LOGIN_FAIL,function(data)
     openPasswordForm();
 });
 
+socket.on(CMD_PAUSE_QUIZ,function(data)
+{
+  console.log("CMD_PAUSE_QUIZ");
+  showAdminStatus("Quiz paused");
+});
+
 socket.on(CMD_LOGIN_OK,function(data)
 {
     console.log("CMD_LOGIN_OK: "+data.msg);
     closePasswordForm();
+    openRegistration();
+    socket.emit(CMD_GET_CATEGORIES,new AdminData(myPassword,""));
 });
 
-function startQuiz(quizName)
+function startQuiz()
 {
-    socket.emit(CMD_START_QUIZ,new AdminData(myPassword,quizName));
+  console.log("Starting quiz");
+  var quizSelect=document.getElementById('quizSelect');
+  var quizName = quizSelect.options[quizSelect.selectedIndex].value;
+  var quizStartIndex=document.getElementById('startIndex').value;
+  socket.emit(CMD_START_QUIZ,new AdminData(myPassword,quizName,quizStartIndex));
+}
+
+function pauseQuiz()
+{
+  socket.emit(CMD_PAUSE_QUIZ,new AdminData(myPassword,"",""));
 }
 
 function openRegistration()
@@ -81,15 +99,14 @@ function openRegistration()
 
 function buildQuizList(categories)
 {
-  var regTable = document.getElementById('quizTable');
-  var newRow,newCell;
-  regTable.innerHTML="";
+  var quizSelect = document.getElementById('quizSelect');
 
   for (var i=0;i<categories.length;i++)
   {
-      newRow=regTable.insertRow();
-      newCell = newRow.insertCell();  
-      newCell.innerHTML = createQuizButton(categories[i]);
+    var opt = document.createElement('option');
+    opt.value = categories[i];
+    opt.innerHTML = categories[i];
+    quizSelect.appendChild(opt);
   };
 }
 

@@ -1,6 +1,3 @@
-const GAME_NAME="INTERACT";
-const GAME_VERSION="0.1";
-
 const COOKIE_EXPIRY_MS = 36*60*60*1000; // 36 hours - the length of the training
 const COOKIE_USER_PARAMETER = "username";
 const COOKIE_QUIZ_PREFIX = "rhquiz";
@@ -8,13 +5,12 @@ const COOKIE_CORRECT_ANSWER = "correct";
 const COOKIE_INCORRECT_ANSWER = "incorrect";
 const COOKIE_SEPARATOR = "/";
 
-// ******* Shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
+// ******* Shared list of constants between server.js, processMainDisplay.js, processAdmin.js and processPlayer.js *******
 
 const CMD_REGISTER="register";
 const CMD_REGISTERED="registered";
 const CMD_NEW_QUESTION = "newQuestion";
 const CMD_QUESTION_TIMEOUT = "questionTimeout";
-const CMD_QUIZ_READY = "quizReady";
 const CMD_END_OF_QUIZ = "quizEnd";
 const CMD_PLAYER_DATA = 'playerData';
 const CMD_DUPLICATE_PLAYER = "duplicatePlayer";
@@ -25,13 +21,17 @@ const CMD_LOGIN = "login";
 const CMD_LOGIN_OK = "loginOK";
 const CMD_LOGIN_FAIL = "loginFail";
 const CMD_GET_CATEGORIES = "getCategories";
+const CMD_TIME_LEFT = 'timeLeft';
+const CMD_PAUSE_QUIZ = 'pauseQuiz';
+const CMD_RESTART_QUIZ = 'restartQuiz';
 
-// ******* End of shared list of constants between server.js, processMainDisplay.js and processPlayer.js *******
+// ******* End of shared list of constants between server.js, processMainDisplay.js, processAdmin.js and processPlayer.js *******
 
 var liftMusic;
 var myPlayerName;
 var currentQuestion;
 var amRegistered;
+var timeQuestionAsked;
 
 socket = io.connect();
 
@@ -46,8 +46,8 @@ socket.on(CMD_REGISTERED,function(data)
       return;
     }
     amRegistered=true;
+    clearQuizCookies();
     setCookie(COOKIE_USER_PARAMETER,playerName);
-    document.getElementById("gameTitle").innerHTML= GAME_NAME+" "+GAME_VERSION;
     closeRegistrationForm();
     openGameWaitForm(myPlayerName);
   }
@@ -63,22 +63,45 @@ socket.on(CMD_DUPLICATE_PLAYER,function(data)
   }
 });
 
-socket.on(CMD_QUIZ_READY,function(data)
+socket.on(CMD_START_QUIZ,function(data)
 {
+  console.log("Quiz: "+data.msg+" about to start");
   closeGameWaitForm();
-  clearQuizCookies();
+  openStatusForm();
+  showStatus("'"+data.msg+"' quiz about to start");
+});
+
+socket.on(CMD_RESTART_QUIZ,function(data)
+{
+  console.log("Quiz: "+data.msg+" restarting");
+  closeGameWaitForm();
+  closeStatusForm();
+  openQuestionForm();
+});
+
+socket.on(CMD_PAUSE_QUIZ,function(data)
+{
+  console.log("Quiz paused");
+  closeQuestionForm();
+  openStatusForm();
+  showStatus("Quiz paused");
 });
 
 socket.on(CMD_QUESTION_TIMEOUT,function(data)
 {
   console.log("Question timed out");
+  closeQuestionForm();
+  openStatusForm();
+  showStatus("Question timeout");
   updatePlayerStats();
 });
 
 socket.on(CMD_NEW_QUESTION,function(data)
 {
   currentQuestion = data.msg;
+  timeQuestionAsked=new Date();
   closeGameWaitForm(); // For late joiners
+  closeStatusForm();
   console.log("New question received: "+currentQuestion);
   openQuestionForm();
 });
@@ -86,6 +109,8 @@ socket.on(CMD_NEW_QUESTION,function(data)
 socket.on(CMD_END_OF_QUIZ,function(data)
 {
   console.log("End of Quiz");
+  openStatusForm();
+  showStatus("Quiz finished");
 });
 
 init = function()
@@ -120,11 +145,10 @@ function closeRegistrationForm()
 
 // ********** START OF GAME WAIT FORM FUNCTIONS **********
 
-function openGameWaitForm(pName)
+function openGameWaitForm(statusMsg)
 {
   liftMusic = document.getElementById("liftMusic");
   liftMusic.play();
-  document.getElementById('gameWaitStatus').innerHTML=pName+" registered for Game";
   document.getElementById('gameWaitForm').style.display= "block";
 }
 
@@ -141,17 +165,19 @@ function closeGameWaitForm()
 answer = function(selectedAnswerIndex)
 {
     closeQuestionForm();
-    var responseTime=new Date()-new Date(currentQuestion.timeAsked);
+    var responseTime=new Date()-timeQuestionAsked;
     var cookieName=COOKIE_QUIZ_PREFIX+currentQuestion.category+COOKIE_SEPARATOR+currentQuestion.index;
     setCookie(cookieName,(currentQuestion.answerIndex==selectedAnswerIndex?COOKIE_CORRECT_ANSWER:COOKIE_INCORRECT_ANSWER)+COOKIE_SEPARATOR+responseTime);
     socket.emit(CMD_PLAYER_DATA,getPlayerData());
+    openStatusForm();
+    showStatus("Answer submitted");
 }
 
 updatePlayerStats=function()
 {
   var playerSummary=createPlayerSummary(getPlayerData());
   document.getElementById('playerScore').innerHTML=playerSummary.numCorrect;
-  document.getElementById('playerResponseTime').innerHTML=playerSummary.totalResponseTime;
+  document.getElementById('playerResponseTime').innerHTML=formatTime(playerSummary.totalResponseTime);
 }
 
 getPlayerData=function()
@@ -201,14 +227,17 @@ function showQuestion()
   var newRow,newCell;
   qTable.innerHTML="";
   newRow=qTable.insertRow();
+  newRow.style.paddingBottom="10px";
   newCell = newRow.insertCell();  
-  newCell.innerHTML = createSpan(currentQuestion.text,"veryLargeText","red");
+  newCell.style.width='70&';
+  newCell.innerHTML = createSpan(currentQuestion.text,"playerText","black");
 
   for (var i=0;i<currentQuestion.answers.length;i++)
   {
       newRow=qTable.insertRow();
+      newRow.style.paddingBottom="50px";
       newCell = newRow.insertCell();  
-      newCell.innerHTML = createButton(currentQuestion.answers[i],"veryLargeButton",i);
+      newCell.innerHTML = createButton(currentQuestion.answers[i],"playerButton",i);
   };
 }
 
@@ -218,6 +247,29 @@ function closeQuestionForm()
 }
 
 // ********** END OF QUESTION FUNCTION **********
+
+openStatusForm=function()
+{
+  document.getElementById("statusForm").style.display= "block";
+}
+
+closeStatusForm=function()
+{
+  document.getElementById("statusForm").style.display= "none";
+}
+
+showStatus=function(msg)
+{
+  document.getElementById("quizStatus").innerHTML= msg;
+}
+
+formatTime=function(aTime)
+{
+    var t = aTime/1000;
+    var s=t%60;
+    var m=Math.floor(t/60);
+    return (m>0?m+"m ":"")+s.toFixed(1)+"s";
+}
 
 clearQuizCookies=function()
 {
@@ -291,6 +343,16 @@ function createPlayerSummary(playerData)
     }
     console.log("CPS: "+playerData.name+"/"+numCorrect+"/"+totalResponseTime);
     return new PlayerSummary(playerData.name,numCorrect,totalResponseTime);
+}
+
+function questionAlreadyAnswered(answer,previousAnswers)
+{
+    for (var j=0;j<previousAnswers.length;j++)
+    {
+        if (answer.category == previousAnswers[j].category && answer.index == previousAnswers[j].index)
+           return true;
+    }
+    return false;
 }
 
 PlayerSummary=function(name,numCorrect,totalTime)
