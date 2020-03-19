@@ -32,6 +32,7 @@ var myPlayerName;
 var currentQuestion;
 var amRegistered;
 var timeQuestionAsked;
+var pauseStartTime,totalPauseTime;
 
 socket = io.connect();
 
@@ -74,6 +75,7 @@ socket.on(CMD_START_QUIZ,function(data)
 socket.on(CMD_RESTART_QUIZ,function(data)
 {
   console.log("Quiz: "+data.msg+" restarting");
+  totalPauseTime+=(new Date()-pauseStartTime);
   closeGameWaitForm();
   closeStatusForm();
   openQuestionForm();
@@ -82,6 +84,7 @@ socket.on(CMD_RESTART_QUIZ,function(data)
 socket.on(CMD_PAUSE_QUIZ,function(data)
 {
   console.log("Quiz paused");
+  pauseStartTime=new Date();
   closeQuestionForm();
   openStatusForm();
   showStatus("Quiz paused");
@@ -100,6 +103,7 @@ socket.on(CMD_NEW_QUESTION,function(data)
 {
   currentQuestion = data.msg;
   timeQuestionAsked=new Date();
+  totalPauseTime=0;
   closeGameWaitForm(); // For late joiners
   closeStatusForm();
   console.log("New question received: "+currentQuestion);
@@ -165,7 +169,7 @@ function closeGameWaitForm()
 answer = function(selectedAnswerIndex)
 {
     closeQuestionForm();
-    var responseTime=new Date()-timeQuestionAsked;
+    var responseTime=new Date()-timeQuestionAsked-totalPauseTime;
     var cookieName=COOKIE_QUIZ_PREFIX+currentQuestion.category+COOKIE_SEPARATOR+currentQuestion.index;
     setCookie(cookieName,(currentQuestion.answerIndex==selectedAnswerIndex?COOKIE_CORRECT_ANSWER:COOKIE_INCORRECT_ANSWER)+COOKIE_SEPARATOR+responseTime);
     socket.emit(CMD_PLAYER_DATA,getPlayerData());

@@ -149,7 +149,7 @@ displayCurrentQuestion=function(question,showAnswer)
     newCell.colSpan = 1;
     newCell.innerHTML = createSpan((question.index+1),"timeText","red");
     newCell = newRow.insertCell();  
-    newCell.colSpan = 2;
+    newCell.colSpan = 3;
     newCell.innerHTML = createSpan(question.text,"questionText","black");
     
   for (var i=0;i<question.answers.length;i++)

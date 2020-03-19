@@ -41,6 +41,8 @@ exports.loadQuestions=function(questionsFile)
             aQuestion.addAnswer(line.substring(QUESTION_PREFIX.length),true);
         else if (line.startsWith(WRONG_ANSWER_PREFIX))
             aQuestion.addAnswer(line.substring(QUESTION_PREFIX.length),false);
+        else 
+            console.log("Ignoring line: "+line);
     });
 
     lineReader.on('close', function (line) 

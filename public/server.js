@@ -166,11 +166,6 @@ io.on('connection',function(socket)
 
     socket.on(CMD_PLAYER_DATA,function(playerData)
     {
-        console.log("CMD_PLAYER_DATA: Name: "+playerData.name);
-        for (var j=0;j<playerData.answers.length;j++)
-        {
-            console.log("--> "+playerData.answers[j].category+"/"+playerData.answers[j].index+"/"+playerData.answers[j].isCorrect+"/"+playerData.answers[j].responseTime);
-        }         
         sendToClient(CMD_PLAYER_DATA,playerData);
     });
 });
@@ -302,4 +297,13 @@ AnswerEntry=function(category,index,isCorrect,responseTime)
   this.index=index;
   this.isCorrect=isCorrect;
   this.responseTime=responseTime;
+}
+
+logPlayerData=function(playerData)
+{
+    console.log("PLAYER DATA for: "+playerData.name);
+    for (var j=0;j<playerData.answers.length;j++)
+    {
+        console.log("--> "+playerData.answers[j].category+"/"+playerData.answers[j].index+"/"+playerData.answers[j].isCorrect+"/"+playerData.answers[j].responseTime);
+    }     
 }

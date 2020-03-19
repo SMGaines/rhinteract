@@ -1,127 +1,172 @@
-c:General
+c:Foundations
+
 q:The three stages of Red Hat involvement in Open Source are Participate, Integrate and .. ?
 A:Stabilize
 a:Productize
 a:Secure
 a:Subscribe
+
 q:ELS stands for Extended Lifecycle Support
 A:True
 a:False
-c:Cloud-native Development
-q:Apache Camel is the principal technology found in ????
+
+q:Red Hat Insights is included in RHEL 6, 7 & 8?
+A:True
+a:False
+
+q:What is the length of the RHEL major release lifecycle?
+a:Unlimited
+a:Depends when the customer buys the subscription
+A:10 years
+a:13 years
+
+q:What is Red Hat’s market share of the Enterprise Linux market?
+A:65-70%
+a:45-55%
+a:No-one knows
+a:More than 80%
+
+q:OpenJDK is included in every RHEL subscription
+A:True
+a:False
+
+c:Agile Integration
+
+q:Apache Camel is the principal technology found in .. ?
 a:Red Hat Decision Manager
 a:Red Hat A-MQ
 A:Red Hat Fuse
 a:Red Hat 3Scale
-q:Agile Integration consists of :- Fuse, A-MQ, 3Scale & ????
+
+q:Agile Integration consists of :- Fuse, A-MQ, 3Scale & .. ?
 a:RHEL
 a:Red Hat JBoss EAP
 A:OpenShift
 a:OpenStack
+
 q:Red Hat believes that centralised integration is the way forward
 a:True
 A:False
-q:For very large-scale, many-to-many integration, the best Red Hat technology would be ..?
+
+q:For very large-scale, many-to-many integration, the best Red Hat technology would be .. ?
 A:A-MQ Streams
 a:A-MQ
 a:Red Hat 3Scale
 a:Red Hat Process Automation
+
 q:Agile Integration & Cloud-native Development are rarely seen in the same project
 a:True
 A:False
-q:What business benefit does OpenShift provide within Agile Integration?
+
+q:What principal business benefit does OpenShift provide within Agile Integration?
 a:Time to market
 a:Cost savings
 A:Scaling to business demand
 a:Reduced lock-in
+
+c:Cloud-Native Development
+
 q:The ‘CI’ in ‘CI/CD’ stands for Continuous Integration
 A:True
 a:False
 q:Red Hat provides Continuous Integration capability with OpenShift
 A:True
 a:False
-q:The three business benefits of micro-services are :-Faster innovation,More efficient use of resources and ..?
+
+q:The three business benefits of micro-services are :-Faster innovation,More efficient use of resources and .. ?
 a:Cost-savings
 a:Reduced lock-in
 A:Efficiency through re-use
 a:Ease of migration from monolithic applications
-q:Red Hat Runtimes provides Developers with ..?
+
+q:Red Hat Runtimes provides Developers with .. ?
 a:Cost-savings
 a:Security
 a:Faster Coding Time
 A:Choice of technologies
+
 q:OpenShift is based on which Community Project?
 A:OKD
 a:AWX
 a:Fedora
 a:RDO
-q:In which language do we write JBoss EAP applications?
-a:C#
-A:Java
-a:There are many options
-a:Java, Python or C++
+
 q:What would be the best product to offer if the customer wanted to add intelligence to applications?
 a:Red Hat 3Scale
 A:Red Hat Decision Manager
 a:Red Hat OpenShift Container Platform
 a:Red Hat Ansible Automation Platform
+
+q:With OpenShift, any Application automatically 'auto-scales' based on demand
+a:True
+A:False
+
 c:Hybrid Cloud Infrastructure
+
 q:Red Hat OpenStack Platform is based on which Red Hat sponsored Community?
 a:OKD
 a:AWX
 a:Fedora
 A:RDO
-q:OpenShift supports a standard Container format called ????
-a:Red Hat Quay
-a:JSON
-A:OCI
-a:KVM
+
 q:Which component of OpenShift maintains the health of Business Applications?
 a:Red Hat Quay
 A:Kubernetes
 a:Jenkins
 a:OpenShift Container Storage
+
 q:Which component of OpenShift automates installation and administration of Business Applications?
 a:Kubernetes
 a:Red Hat Quay
 a:OpenStack
 A:Operators
+
 q:Openshift Dedicated is only available on Amazon
 a:True
 A:False
+
 q:What is the name of Red Hat’s Container Registry product?
 a:Kubernetes
 A:Red Hat Quay
 a:Red Hat Container Storage
 a:Red Hat 3Scale
+
 q:OpenShift Container Storage 4.x is powered by which Storage technology?
 A:Ceph
 a:Gluster
 a:S3
 a:IBM
-c:RHEL
-q:Red Hat Insights is included in RHEL 6, 7 & 8?
-A:True
-a:False
-q:What is the length of the RHEL major release lifecycle?
-a:Unlimited
-a:Depends when the customer buys the subscription
-A:10 years
-a:7 years
-q:What is Red Hat’s market share of the Enterprise Linux market?
-A:65-70%
-a:45-55%
-a:No-one knows
-a:More than 80%
-q:OpenJDK is included in every RHEL subscription
-A:True
-a:False
-c:Automation 
+
+c:Automation
+
 q:Red Hat has more than one IT Automation product
 A:True
 a:False
+
 q:Ansible Tower is based on which Community Project
 a:Apache Camel
 a:ManageIQ
 A:AWX
 a:OKD
+
+q:The name of Red Hat's Automation product is .. ?
+a:Ansible Engine
+A:Red Hat Ansible Automation Platform
+a:Red Hat Ansible Automation
+a:Red Hat Ansible Tower
+
+q:Which of these is NOT a competitor to Red Hat Ansible Automation Platform?
+a:Puppet
+a:Chef
+a:Community Ansible
+A:Red Hat Satellite
+
+q:An Ansible playbook is ..?
+a:A methodology for selling Ansible
+a:A piece of software installed on a managed device
+A:A script for an automation task
+a:None of the above
+
+q:Automation Hub is available for all users of Ansible
+a:True
+A:False
