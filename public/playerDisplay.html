@@ -12,6 +12,7 @@
         <audio id="liftMusic" preload="auto" loop> <source src="audio/liftMusic.wav" type="audio/wav"/></audio>
    </div>
     <div id='statusForm' class='popup' >
+        <br><br><br>
         <TABLE id='statusTable' style="margin:auto;">
             <TR>
                 <TH><img src='images/rhlogo.png'></TH>
@@ -42,22 +43,43 @@
     </div>
 
     <div id='questionForm' class='popup'>
-        <TABLE id='questionTable' style='border-spacing: 15px;'>
+        <br><br><br>
+        <TABLE id='questionTable' style='border-spacing: 0 50px;'>
        </TABLE>
     </div>
 
 	<div class='popup' id='gameWaitForm'>
+        <br><br><br>
         <TABLE style="margin:auto;">
             <TR><TH style='padding: 20px;' class='playerText'>Waiting for Quiz to start</TH></TR>
         </TABLE>
     </div>
 
     <div class='popup' id='registrationForm'>
+        <br><br><br>
         <TABLE style="margin:auto;">
-            <TR><TH style='padding: 20px;' class='playerText'>Register</TH></TR>
-            <TR><TH style='padding: 20px;'><input class='playerText' id='regName' type='text' required pattern='[a-zA-Z0-9]+'' minlength='3' maxlength='10'/></TH></TR>
-            <TR><TH style='padding: 20px;'><button id = 'regButton' class='playerText' type='button' onclick='processRegistrationForm()'>OK</button></TH></TR>
-            <TR><TH style='padding: 20px;'><span id="regStatus" class='playerText'>Name must be 3-8 alphanumeric chars</span></TH></TR>
+            <TR><TH colspan='2' style='padding: 20px;' class='playerText'>Register</TH></TR>
+            <TR><TH colspan='2' style='padding: 20px;'><input class='playerLogin' id='regName' type='text' required pattern='[a-zA-Z0-9]+'' minlength='3' maxlength='10'/></TH></TR>
+            <TR><TH colspan='2' style='padding: 20px;'><button id = 'regButton' class='playerText' type='button' onclick='processRegistrationForm()'>OK</button></TH></TR>
+            <TR><TH colspan='2' style='padding: 20px;'><span id="regStatus" class='playerText'>Name must be 3-8 alphanumeric chars</span></TH></TR>
+        </TABLE>
+    </div>
+    <div class='popup' id='termsForm'>
+        <br><br><br>
+        <TABLE style="margin:auto;">
+            <TR>
+                <TR><TH colspan='2' style='padding: 20px;' class='playerText'>App Terms</TH></TR>
+                <TH colspan='2' ><span class='playerText'>This App temporarily stores cookies in your<br> 
+                                                browser for the purposes solely of keeping<br>
+                                                score in the quiz.No information is used by<br>
+                                                Red Hat for any other purposes and no<br> 
+                                                permanent record is kept.<br>
+                                                Click yes to agree to these terms.
+                </span></TH>
+            </TR>
+            <TR><TH style='padding: 20px;'><button class='playerLogin' type='button' onclick='processYesButton()'>Yes</button></TH>
+                <TH style='padding: 20px;'><button class='playerLogin' type='button' onclick='processNoButton()'>No</button></TH>
+            </TR>
         </TABLE>
     </div>
 </body>

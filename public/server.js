@@ -4,7 +4,7 @@ const QUESTION_TIME = 20; // How long for people to answer a question
 const QUESTION_INTERVAL=5000; // Time between questions
 const ANSWER_REVEAL_INTERVAL=5000;
 
-const NUM_BOTS = 30;
+const NUM_BOTS = 5;
 const BOT_PREFIX="BOT";
 const BOT_INTERVAL = 500;
 const MIN_BOT_RESPONSE_TIME = 10000;

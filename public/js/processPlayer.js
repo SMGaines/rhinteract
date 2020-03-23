@@ -120,7 +120,7 @@ socket.on(CMD_END_OF_QUIZ,function(data)
 init = function()
 {
     console.log("Init");
-    openRegistrationForm();
+    openTermsForm();
 };
 
 // ********** START OF REGISTRATION FUNCTIONS **********
@@ -230,6 +230,7 @@ function showQuestion()
   var qTable = document.getElementById('questionTable');
   var newRow,newCell;
   qTable.innerHTML="";
+  
   newRow=qTable.insertRow();
   newRow.style.paddingBottom="10px";
   newCell = newRow.insertCell();  
@@ -251,6 +252,27 @@ function closeQuestionForm()
 }
 
 // ********** END OF QUESTION FUNCTION **********
+
+openTermsForm=function()
+{
+  document.getElementById("termsForm").style.display= "block";
+}
+
+closeTermsForm=function()
+{
+  document.getElementById("termsForm").style.display= "none";
+}
+
+processYesButton=function()
+{
+  closeTermsForm();
+  openRegistrationForm();
+}
+
+processNoButton=function()
+{
+  closeTermsForm();
+}
 
 openStatusForm=function()
 {

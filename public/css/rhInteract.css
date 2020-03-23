@@ -129,6 +129,19 @@
   font-family: "RHFont";
 }
 
+.playerLogin {
+  display: block;
+  border-radius: 25px;
+  border-style: solid;
+  border-color: #FF0000;
+  background-color: #FFFFFF;
+  color: #000000;
+  padding: 10px 10px;
+  font-size: 64px;
+  font-family: "RHFont";
+}
+
+
 .headerText {
   margin:0 auto;
   display: block;
