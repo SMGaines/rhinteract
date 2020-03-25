@@ -6,13 +6,15 @@ a:Productize
 a:Secure
 a:Subscribe
 
-q:ELS stands for Extended Lifecycle Support
-A:True
-a:False
-
 q:Red Hat Insights is included in RHEL 6, 7 & 8?
 A:True
 a:False
+
+q:What is the price of a one year RHEL 8 Premium subscription?
+a:500 euros
+a:750 euros
+a:1039 euros
+A:None of the above
 
 q:What is the length of the RHEL major release lifecycle?
 a:Unlimited
@@ -170,3 +172,34 @@ a:None of the above
 q:Automation Hub is available for all users of Ansible
 a:True
 A:False
+
+c:SEAP
+
+q:ELS stands for Extended Lifecycle Support
+A:True
+a:False
+
+q:Which versions of RHEL require a subscription?
+a:6, 7 & 8
+A:4, 5, 6, 7 & 8
+a:Every RHEL versions
+a:None of the above
+
+q:Self-support is not available for Physical Servers
+a:True
+A:False
+
+q:EUS is included in every RHEL subscription
+a:True
+A:False
+
+q:If a customer removes the Trademarks/Logos from RHEL, they no longer require a subscription
+a:True
+A:False
+
+q:RHEL 6 is End of Life in:
+A:November 2020
+a:November 2023
+a:June 2024
+a:It doesn't go End of Life
+
