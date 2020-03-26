@@ -85,6 +85,7 @@ var secondsLeft;
 
 function init()
 {
+    console.log("RH INTERACT: Initialising");
     currentQuestion=null;
     quizState=STATE_NOT_STARTED;
     password=PASSWORD_NOT_SET;
